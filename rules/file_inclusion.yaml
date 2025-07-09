@@ -1,0 +1,5 @@
+name: 文件包含攻击检测
+pattern: '(file=|page=|path=|include=)(\.\./|http://|https://|ftp://)'
+severity: high
+category: file_inclusion
+description: 检测常见的文件包含攻击模式，包括本地文件包含(LFI)和远程文件包含(RFI)尝试

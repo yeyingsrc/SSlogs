@@ -1,0 +1,5 @@
+name: 服务器版本泄露检测
+pattern: '(Server: (Apache|Nginx|IIS|Microsoft-IIS|lighttpd|Tomcat)/\d+\.\d+\.\d+|X-Powered-By: (PHP|ASP\.NET|Express|Node\.js)/\d+\.\d+\.\d+)'
+severity: medium
+category: information_disclosure
+description: 检测服务器响应头中泄露的软件版本信息，可能被用于识别已知漏洞

@@ -1,0 +1,249 @@
+# ====================
+# SSlogs Project .gitignore
+# ====================
+
+# ==================== 
+# Log Files
+# ====================
+# Log directories and files
+logs/
+*.log
+*.log.*
+*.log.gz
+*.log.tar.gz
+*.log.zip
+*.log.rar
+
+# Temporary log files
+temp_logs/
+tmp_logs/
+/tmp/log_extract/
+
+# ==================== 
+# Generated Reports
+# ====================
+# Output directories
+output/
+test_output/
+reports/
+
+# Report files
+*_report_*.html
+*_report_*.json
+*_report_*.markdown
+*_report_*.md
+log_analysis_report_*
+*.report
+
+# ==================== 
+# Virtual Environments
+# ====================
+# Python virtual environments
+venv/
+env/
+ENV/
+.venv/
+.env/
+virtualenv/
+.virtualenv/
+
+# Conda environments
+conda-meta/
+.conda/
+
+# ==================== 
+# Python Files
+# ====================
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# C extensions
+*.so
+
+# Distribution / packaging
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+pip-wheel-metadata/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# PyInstaller
+*.manifest
+*.spec
+
+# Unit test / coverage reports
+htmlcov/
+.tox/
+.nox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+*.py,cover
+.hypothesis/
+.pytest_cache/
+
+# ==================== 
+# Configuration & Secrets
+# ====================
+# API keys and secrets
+.env
+.env.local
+.env.production
+.env.staging
+api_keys.txt
+secrets.json
+private_config.yaml
+
+# Database files
+*.db
+*.sqlite
+*.sqlite3
+
+# ==================== 
+# GeoIP Data (Large Files)
+# ====================
+# GeoIP database files (keep structure but ignore large data files)
+config/GeoLite2-*.mmdb
+config/GeoLite2-*.tar.gz
+config/geoip_data/
+
+# ==================== 
+# Temporary Files
+# ====================
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Temporary directories
+tmp/
+temp/
+.tmp/
+.temp/
+
+# ==================== 
+# IDE & Editor Files
+# ====================
+# VSCode
+.vscode/
+*.code-workspace
+
+# PyCharm
+.idea/
+*.iml
+*.iws
+
+# Sublime Text
+*.sublime-project
+*.sublime-workspace
+
+# Vim
+*.swp
+*.swo
+*~
+
+# Emacs
+*~
+\#*\#
+/.emacs.desktop
+/.emacs.desktop.lock
+*.elc
+auto-save-list
+tramp
+.\#*
+
+# ==================== 
+# AI Analysis Cache
+# ====================
+# AI analysis cache and temporary files
+ai_cache/
+.ai_cache/
+analysis_cache/
+
+# ==================== 
+# Archive Files
+# ====================
+# Compressed log archives
+*.tar.gz
+*.tar.bz2
+*.tgz
+*.zip
+*.rar
+*.7z
+
+# But keep example files and documentation
+!example*.log
+!sample*.log
+!README*.md
+!INSTALL*.md
+
+# ==================== 
+# Performance & Debug
+# ====================
+# Performance profiling
+*.prof
+*.profile
+
+# Debug files
+debug/
+debug.log
+trace.log
+
+# Memory dumps
+*.dump
+*.dmp
+
+# ==================== 
+# System Files
+# ====================
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# Linux
+*~
+.directory
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+Icon
+._*
+.DocumentRevisions-V100
+.fseventsd
+.Spotlight-V100
+.TemporaryItems
+.Trashes
+.VolumeIcon.icns
+.com.apple.timemachine.donotpresent
+.AppleDB
+.AppleDesktop
+Network Trash Folder
+Temporary Items
+.apdisk

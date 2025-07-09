@@ -1,0 +1,5 @@
+name: XSS攻击检测
+pattern: '(<script.*?>.*?</script>|javascript:|onerror=|onclick=|onload=|eval\(|document\.cookie|alert\(|prompt\(|confirm\()'
+severity: medium
+category: xss
+description: 检测常见的跨站脚本攻击模式，包括脚本标签、事件处理器和JavaScript执行函数

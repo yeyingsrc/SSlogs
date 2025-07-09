@@ -1,0 +1,5 @@
+name: 不安全HTTP方法检测
+pattern: '^(PUT|DELETE|TRACE|CONNECT|PATCH)\s+'
+severity: medium
+category: misconfiguration
+description: 检测使用不安全HTTP方法的请求，包括PUT、DELETE、TRACE等可能带来安全风险的方法

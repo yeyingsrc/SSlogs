@@ -1,0 +1,18 @@
+name: "JNDI挖矿组合攻击检测"
+pattern:
+  request_path: "\\$\\{.*(?:jndi|ldap|rmi|dns).*\\}.*(?:base64|miner|pool|mining|4thepool|Y3VybC)"
+severity: "critical"
+category: "crypto_mining"
+description: "检测通过JNDI注入漏洞执行挖矿攻击的恶意载荷，特别针对Log4j漏洞"
+cwe: "CWE-502"
+references:
+  - "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2021-44228"
+  - "https://attack.mitre.org/techniques/T1496/"
+attack_patterns:
+  - "JNDI注入"
+  - "Log4j漏洞利用"
+  - "反序列化攻击"
+  - "挖矿软件部署"
+response_codes: [200, 301, 302]
+threat_level: "critical"
+impact: "利用JNDI注入漏洞安装挖矿软件，可能导致系统完全控制"

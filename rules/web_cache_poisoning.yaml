@@ -1,0 +1,5 @@
+name: Web缓存投毒攻击检测
+pattern: '(X-Forwarded-Host|X-Host|X-Original-URL|X-Rewrite-URL):\s*[^\s]+'
+severity: high
+category: cache_poisoning
+description: 检测Web缓存投毒攻击模式，包括通过控制请求头操纵缓存内容的尝试，如X-Forwarded-Host等可用于缓存键污染的头字段

@@ -1,0 +1,5 @@
+name: 备份文件访问检测
+pattern: '(\.bak|\.old|\.swp|\.tmp|\.backup|~)$'
+severity: medium
+category: sensitive_access
+description: 检测对常见备份文件的访问尝试，包括.bak、.old、.swp等扩展名的文件

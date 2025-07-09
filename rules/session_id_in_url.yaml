@@ -1,0 +1,5 @@
+name: 会话ID在URL中暴露检测
+pattern: '(sessionid=|PHPSESSID=|JSESSIONID=|ASPSESSIONID=|CFID=|CFTOKEN=)'
+severity: medium
+category: session_security
+description: 检测URL中包含会话ID的不安全实践，可能导致会话劫持和信息泄露

@@ -1,0 +1,5 @@
+name: 错误信息泄露检测
+pattern: '(Fatal error:|Notice:|Warning:|Exception in thread|Stack trace:|Traceback \(most recent call last\):|java\.lang\.|php\.error)'
+severity: medium
+category: information_disclosure
+description: 检测响应中泄露的错误信息，可能包含敏感系统细节和代码路径

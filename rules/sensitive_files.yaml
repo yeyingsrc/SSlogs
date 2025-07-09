@@ -1,0 +1,5 @@
+name: 敏感文件访问检测
+pattern: '(/\.env|/\.git/|/config\.(php|yaml|yml)|/database\.(php|yaml|yml)|/\.htaccess|/server-status|/phpinfo\.php)'
+severity: high
+category: sensitive_access
+description: 检测对敏感配置文件和系统文件的访问尝试，包括环境变量文件、数据库配置和版本控制目录

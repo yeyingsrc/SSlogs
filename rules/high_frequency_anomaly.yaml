@@ -1,0 +1,19 @@
+name: "高频请求异常检测"
+pattern:
+  src_ip: ".*"
+  request_path: "(?i).*(login|admin|manager|console|api|rest|graphql|upload|download|search|query|index|home|main|default|root|base|common|public|static|assets|resources|content|data|files|images|img|css|js|scripts|style|font|media|video|audio|doc|docs|help|support|contact|about|news|blog|forum|shop|store|cart|checkout|payment|order|user|users|profile|account|settings|config|dashboard|panel|control|manage|edit|create|add|new|delete|remove|update|modify|change|save|submit|send|post|get|put|patch|head|options|trace|connect|propfind|proppatch|mkcol|copy|move|lock|unlock|report|export|import|backup|restore|sync|migrate|install|setup|upgrade|downgrade|uninstall|enable|disable|start|stop|restart|reload|refresh|reset|clear|clean|flush|purge|vacuum|optimize|repair|check|test|debug|trace|log|monitor|status|health|ping|echo|info|version|build|release|deploy|publish|launch|run|execute|eval|exec|system|shell|cmd|command|script|code|program|process|thread|task|job|queue|worker|service|daemon|agent|proxy|gateway|load|balance|cluster|node|server|client|host|domain|subdomain|port|protocol|scheme|path|route|endpoint|resource|method|action|function|procedure|operation|transaction|session|cookie|token|key|secret|password|auth|login|logout|signin|signout|register|signup|forgot|remember|verify|activate|confirm|validate|authorize|authenticate|permission|role|group|team|organization|company|enterprise)"
+severity: "medium"
+category: "anomaly"
+description: "检测异常高频请求模式，可能的DDoS或暴力破解攻击"
+cwe: "CWE-307"
+references:
+  - "https://attack.mitre.org/techniques/T1110/"
+  - "https://attack.mitre.org/techniques/T1498/"
+attack_patterns:
+  - "DDoS攻击"
+  - "暴力破解"
+  - "资源耗尽"
+  - "服务滥用"
+response_codes: [200, 404, 403, 401, 429, 500, 502, 503, 504]
+threat_level: "high"
+impact: "服务不可用，资源耗尽，系统性能下降"

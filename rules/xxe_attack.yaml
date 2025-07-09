@@ -1,0 +1,5 @@
+name: XML外部实体(XXE)攻击检测
+pattern: '(<!DOCTYPE\s+\w+\s*\[?\s*(<!ENTITY\s+(?:%\s+)?\w+\s+SYSTEM\s+["''](?:file|http|https|ftp|gopher|php):\/\/.*?["'']|SYSTEM\s+["''].*?["'']).*?\]?|<!ENTITY\s+(?:%\s+)?\w+\s+SYSTEM\s+["''](?:file|http|https|ftp|gopher|php):\/\/.*?["''])'
+severity: high
+category: injection
+description: 检测XML外部实体(XXE)攻击模式，包括DOCTYPE声明、外部实体引用、参数实体及多种协议引用(文件、HTTP、FTP等)

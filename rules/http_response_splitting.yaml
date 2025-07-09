@@ -1,0 +1,5 @@
+name: HTTP响应拆分攻击检测
+pattern: '(%0d|%0a|\\r|\\n)\\s*(HTTP/|Content-Type:|Location:|Set-Cookie:)'
+severity: high
+category: injection
+description: 检测HTTP响应拆分攻击模式，包括在参数中注入CRLF字符尝试分割HTTP响应头

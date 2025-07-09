@@ -1,0 +1,21 @@
+name: "JNDI注入攻击检测"
+pattern:
+  request_path: "\\$\\{.*(?:jndi|ldap|rmi|dns|nis|iiop|corba|nds|http)://.*\\}"
+  user_agent: "\\$\\{.*(?:jndi|ldap|rmi|dns).*\\}"
+  client_info: "\\$\\{.*(?:jndi|ldap|rmi|dns).*\\}"
+severity: "critical"
+category: "injection"
+description: "检测JNDI注入攻击模式，包括Log4j等漏洞利用中常见的LDAP/RMI远程类加载尝试"
+cwe: "CWE-502"
+references:
+  - "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2021-44228"
+  - "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2021-45046"
+  - "https://attack.mitre.org/techniques/T1190/"
+attack_patterns:
+  - "Log4j远程代码执行"
+  - "LDAP注入"
+  - "RMI远程调用"
+  - "DNS外带"
+response_codes: [200, 400, 500]
+threat_level: "critical"
+impact: "可能导致远程代码执行、数据泄露或系统完全控制"

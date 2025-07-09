@@ -1,0 +1,5 @@
+name: 路径遍历攻击检测
+pattern: '(\.\./|\.\.\\|%2e%2e%2f|%2e%2e%5c)'
+severity: high
+category: path_traversal
+description: 检测常见的路径遍历攻击模式，包括直接使用和URL编码的目录遍历序列

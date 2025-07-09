@@ -1,0 +1,19 @@
+name: "自动化工具和爬虫检测"
+pattern:
+  user_agent: "(?i)(curl|wget|python|requests|scrapy|selenium|phantomjs|headless|chrome|firefox|bot|crawler|spider|scraper|harvest|extract|grab|fetch|download|auto|script|tool|utility|client|library|framework|engine|agent|probe|test|check|monitor|scan|audit|assess|analyze|inspect|examine|explore|discover|find|search|query|request|http|web|api|rest|soap|xml|json|data|content|page|site|url|link|href|src|img|css|js|html|txt|pdf|doc|xls|zip|tar|gz|rar|7z|exe|bin|dll|so|dmg|pkg|deb|rpm|msi|iso|img|vmdk|ova|ovf|vhd|vhdx|qcow|raw|iso|bin|hex|elf|pe|macho|fat|ar|cpio|tar|shar|zoo|arc|arj|lha|lzh|cab|ace|bz2|xz|lz|z|compress|pack|compact|squeeze|crunch|crush|mash|smash|bash|dash|zsh|fish|csh|tcsh|ksh|sh|bat|cmd|ps1|vbs|js|py|pl|rb|php|asp|jsp|cgi|fcgi|wsgi|asgi|rack|sinatra|rails|django|flask|bottle|tornado|twisted|gevent|eventlet|asyncio|aiohttp|httpx|requests|urllib|urllib2|urllib3|httplib|httplib2|pycurl|mechanize|beautifulsoup|lxml|html5lib|pyquery|cssselect)"
+  request_path: "(?i).*(api|rest|soap|wsdl|wadl|graphql|endpoint|service|resource|data|feed|rss|atom|xml|json|csv|txt|log|backup|dump|export|archive|zip|tar|gz|sql|db|database|config|cfg|ini|yml|yaml|properties|env|settings|conf|rc|profile|bashrc|zshrc|history|cache|tmp|temp|var|log|proc|sys|dev|etc|usr|opt|bin|sbin|lib|share|include|man|info|doc|docs|help|readme|license|changelog|news|todo|bug|issue|ticket|report|status|health|metrics|stats|monitor|dashboard|admin|manage|control|panel|console|terminal|shell|cmd|exec|eval|system|proc|fork|spawn|thread|task|job|queue|worker|daemon|service|server|client|agent|proxy|gateway|load|balance|cluster|node|host|domain|subdomain|port|protocol|scheme|path|query|param|arg|var|val|key|token|secret|password|pass|pwd|user|username|login|auth|session|cookie|header|referer|agent|ip|addr|host|port|url|uri|href|link|src|img|css|js|script|style|font|icon|favicon|logo|banner|ad|advertisement|tracking|analytics|pixel|beacon|tag|meta|title|description|keyword|content|text|body|head|html|xml|json|csv|txt|pdf|doc|docx|xls|xlsx|ppt|pptx|odt|ods|odp|rtf|md|markdown|tex|latex|ps|eps|svg|png|jpg|jpeg|gif|bmp|tiff|webp|ico|cur|ani|mp3|mp4|avi|mov|wmv|flv|swf|wav|ogg|aac|flac|m4a|wma|mid|midi|zip|rar|7z|tar|gz|bz2|xz|lz|z|exe|msi|dmg|pkg|deb|rpm|app|apk|ipa|jar|war|ear|so|dll|dylib|a|o|obj|lib|pdb|map|pch|idb|ids|til|pat|sig|yar|rule|hdb|fdb|gdb|dbg|core|dump|crash|minidump|dmp|mdmp|hdmp|wer|evt|evtx|log|txt|out|err|stdout|stderr|stdin|tty|pty|pipe|fifo|socket|lock|pid|tmp|temp|bak|backup|old|orig|copy|new|save|orig|previous|last|latest)"
+severity: "medium"
+category: "reconnaissance"
+description: "检测自动化工具、网络爬虫和数据抓取行为"
+cwe: "CWE-200"
+references:
+  - "https://attack.mitre.org/techniques/T1213/"
+  - "https://attack.mitre.org/techniques/T1005/"
+attack_patterns:
+  - "自动化扫描"
+  - "数据抓取"
+  - "内容爬取"
+  - "API枚举"
+response_codes: [200, 404, 403, 401, 302, 500]
+threat_level: "medium"
+impact: "数据泄露，内容抓取，服务器负载"

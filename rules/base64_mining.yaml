@@ -1,0 +1,17 @@
+name: "Base64编码挖矿载荷检测"
+pattern:
+  request_path: "(?i).*(base64|Y3VybC|bmN|ZG93bmxvYWQ|c2V0dXA|bWluZXI).*[A-Za-z0-9+/]{100,}[=]{0,2}"
+severity: "critical"
+category: "crypto_mining"
+description: "检测Base64编码的恶意载荷，常用于挖矿攻击和命令注入"
+cwe: "CWE-506"
+references:
+  - "https://attack.mitre.org/techniques/T1027/"
+  - "https://attack.mitre.org/techniques/T1496/"
+attack_patterns:
+  - "编码载荷"
+  - "混淆攻击"
+  - "命令注入"
+response_codes: [200, 301, 302]
+threat_level: "critical"
+impact: "执行Base64编码的恶意命令，可能安装挖矿软件"

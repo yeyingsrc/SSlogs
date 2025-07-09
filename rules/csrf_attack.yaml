@@ -1,0 +1,5 @@
+name: 跨站请求伪造(CSRF)攻击检测
+pattern: '(/submit|/save|/update|/delete|/change-password|/transfer)\?((?!csrf_token=|token=|anti_csrf=).)*$'
+severity: medium
+category: csrf
+description: 检测对状态修改接口的跨站请求伪造尝试，识别缺少CSRF保护令牌的敏感操作请求

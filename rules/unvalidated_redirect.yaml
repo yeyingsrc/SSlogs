@@ -1,0 +1,5 @@
+name: 未验证重定向攻击检测
+pattern: '(redirect|url|next|goto|target)=https?://[^/]+'
+severity: medium
+category: phishing
+description: 检测对重定向参数的滥用，识别允许跳转到外部域名的未验证重定向漏洞，可能被用于钓鱼攻击

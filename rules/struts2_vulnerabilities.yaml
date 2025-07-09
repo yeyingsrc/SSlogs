@@ -1,0 +1,5 @@
+name: Struts2远程代码执行漏洞检测
+pattern: '(Content-Type:.*?\${(#|%23)(application|session|request|attr|parameters|cookie)\.(get|put|remove)\(|\?method:%23|\?redirect:%23)'
+severity: critical
+category: rce
+description: 检测Struts2框架常见远程代码执行漏洞模式，包括OGNL表达式注入和方法调用操纵，覆盖S2-045、S2-057等经典漏洞

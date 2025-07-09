@@ -1,0 +1,5 @@
+name: 网站后门与后台访问检测
+pattern: '(/(admin|backend|controlpanel|manage|wp-admin|cmsadmin)/|(webshell|shell|backdoor|cmd|upload)\.(php|asp|jsp|aspx|py))'
+severity: high
+category: webshell
+description: 检测常见的网站后门文件访问和后台管理页面访问尝试，包括webshell文件和管理后台路径

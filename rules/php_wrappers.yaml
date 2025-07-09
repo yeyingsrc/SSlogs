@@ -1,0 +1,5 @@
+name: PHP包装器文件包含检测
+pattern: '(php://filter|php://input|data://|zip://|phar://|expect://|glob://|ssh2://|rar://|ogg://|zlib://)'
+severity: high
+category: file_inclusion
+description: 检测使用PHP包装器的文件包含攻击尝试，包括php://filter、data://等可用于读取或执行文件的特殊流包装器

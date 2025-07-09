@@ -1,0 +1,5 @@
+name: HTTP请求走私攻击检测
+pattern: '(Content-Length:\s*\d+\s+Content-Length:|Transfer-Encoding:\s*(chunked|identity|compress|deflate|gzip)\s+Transfer-Encoding:|Transfer-Encoding:\s*[\t ]+chunked)'
+severity: high
+category: request_smuggling
+description: 检测HTTP请求走私攻击模式，包括重复的Content-Length头、畸形的Transfer-Encoding头和其他请求走私特征

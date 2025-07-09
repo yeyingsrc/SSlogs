@@ -1,0 +1,5 @@
+name: NoSQL注入攻击检测
+pattern: '(\$ne:|\$regex:|\$where:|\$exists:|\$in:|\$nin:|\$or:|\$and:|\$not:|\$nor:|\$expr:)'
+severity: high
+category: injection
+description: 检测常见的NoSQL注入攻击模式，包括MongoDB等非关系型数据库的查询操作符滥用

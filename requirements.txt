@@ -1,0 +1,31 @@
+# 核心依赖
+PyYAML==6.0.1                # YAML配置文件解析
+requests==2.31.0             # HTTP请求库（AI API调用）
+urllib3==1.26.18             # HTTP客户端
+
+# 字符编码处理
+charset-normalizer==3.3.2    # 字符集检测和标准化
+
+# 模板引擎
+Jinja2==3.1.2                # HTML报告模板渲染
+
+# 压缩文件处理
+patool==1.12                 # 多格式压缩文件解压（.rar, .zip, .tar.gz等）
+
+# 地理位置分析
+geoip2>=4.7.0                # IP地理位置查询（MaxMind GeoLite2）
+maxminddb>=2.2.0             # MaxMind数据库访问
+
+# 数据处理和分析
+python-dateutil>=2.8.2      # 日期时间解析
+pytz>=2023.3                # 时区处理
+
+# AI分析相关依赖
+# 注意：如果使用本地Ollama，可以不安装额外依赖
+# 如果使用其他AI服务，可能需要安装对应的SDK
+
+# 可选依赖（用于开发和测试）
+# pytest>=7.0.0             # 单元测试框架
+# pytest-cov>=4.0.0         # 测试覆盖率
+# black>=23.0.0              # 代码格式化
+# flake8>=5.0.0              # 代码检查

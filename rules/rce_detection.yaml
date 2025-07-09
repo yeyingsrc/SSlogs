@@ -1,0 +1,5 @@
+name: 远程代码执行(RCE)检测
+pattern: '(eval\(|exec\(|system\(|shell_exec\(|passthru\(|proc_open\(|popen\(|assert\()'
+severity: high
+category: rce
+description: 检测常见的远程代码执行攻击模式，包括代码执行函数调用

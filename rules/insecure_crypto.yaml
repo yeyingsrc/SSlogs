@@ -1,0 +1,5 @@
+name: 不安全加密实践检测
+pattern: '(md5\(|sha1\(|aes-ecb|des-|3des-|rc4|base64_encode\(|base64_decode\()'
+severity: medium
+category: cryptography
+description: 检测使用不安全加密算法的模式，包括MD5、SHA1、DES和ECB模式等弱加密方法

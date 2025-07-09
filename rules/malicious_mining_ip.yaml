@@ -1,0 +1,18 @@
+name: "挖矿恶意IP检测"
+pattern:
+  request_path: "54\\.37\\.131\\.59"
+  client_info: "54\\.37\\.131\\.59"
+severity: "critical"
+category: "crypto_mining"
+description: "检测已知的挖矿恶意IP地址54.37.131.59，该IP经常用于分发挖矿木马"
+cwe: "CWE-506"
+references:
+  - "https://attack.mitre.org/techniques/T1496/"
+  - "https://attack.mitre.org/techniques/T1071/"
+attack_patterns:
+  - "C2服务器通信"
+  - "恶意IP连接"
+  - "挖矿池连接"
+response_codes: [200, 301, 302, 404]
+threat_level: "critical"
+impact: "连接到已知的挖矿恶意服务器"

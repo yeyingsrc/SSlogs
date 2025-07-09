@@ -1,0 +1,19 @@
+name: "目录爆破和暴力破解检测"
+pattern:
+  request_path: "(?i).*(admin|login|wp-admin|phpmyadmin|adminer|manager|console|dashboard|panel|cpanel|plesk|webmin|pma|myadmin|sql|database|db|backup|config|setup|install|test|dev|staging|tmp|temp|old|bak|orig|copy|backup|archive|dump|export|logs|log)"
+  user_agent: "(?i)(gobuster|dirb|dirbuster|ffuf|wfuzz|feroxbuster|rustbuster|dirsearch|dirmap|brute|force|crack|enum|scan|fuzz|burst|buster)"
+severity: "high"
+category: "brute_force"
+description: "检测目录爆破、暴力破解和敏感路径枚举攻击"
+cwe: "CWE-307"
+references:
+  - "https://attack.mitre.org/techniques/T1110/"
+  - "https://attack.mitre.org/techniques/T1083/"
+attack_patterns:
+  - "目录爆破"
+  - "路径枚举"
+  - "敏感文件探测"
+  - "管理界面发现"
+response_codes: [200, 404, 403, 401, 302, 500]
+threat_level: "high"
+impact: "敏感路径暴露，管理界面发现"

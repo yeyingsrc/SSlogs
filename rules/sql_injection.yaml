@@ -1,0 +1,5 @@
+name: SQL注入攻击检测
+pattern: '(union\s+select|select.*?from|insert.*?into|delete.*?from|drop\s+table|xp_cmdshell|exec\s+sp_|declare\s+@|sqlmap|benchmark\()'
+severity: high
+category: injection
+description: 检测常见的SQL注入攻击模式，包括联合查询、数据操作语句和数据库命令执行尝试

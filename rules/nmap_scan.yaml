@@ -1,0 +1,19 @@
+name: "Nmap和端口扫描检测"
+pattern:
+  user_agent: "(?i)(nmap|masscan|zmap|unicornscan|hping|netcat|nc|telnet|banner|grab|portscan|scan)"
+  request_path: "(?i).*(robots\\.txt|sitemap\\.xml|crossdomain\\.xml|clientaccesspolicy\\.xml|\\.well-known|security\\.txt|humans\\.txt)"
+severity: "high"
+category: "scanning"
+description: "检测Nmap、Masscan等端口扫描工具和网络侦察活动"
+cwe: "CWE-200"
+references:
+  - "https://attack.mitre.org/techniques/T1595.001/"
+  - "https://attack.mitre.org/techniques/T1046/"
+attack_patterns:
+  - "端口扫描"
+  - "服务枚举"
+  - "版本检测"
+  - "OS指纹识别"
+response_codes: [200, 404, 403, 401, 500]
+threat_level: "high"
+impact: "网络拓扑发现，服务识别，为攻击做准备"

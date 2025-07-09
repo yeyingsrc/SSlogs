@@ -1,0 +1,5 @@
+name: HTTP参数污染(HPP)攻击检测
+pattern: '([?&]\w+=[^&]+)(&\1)+'
+severity: medium
+category: injection
+description: 检测HTTP参数污染攻击模式，识别请求中包含重复参数名的异常请求，可能导致应用程序使用意外参数值

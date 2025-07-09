@@ -1,0 +1,5 @@
+name: AWS S3存储桶枚举检测
+pattern: '([a-zA-Z0-9-]+\.s3\.amazonaws\.com|s3\.amazonaws\.com/[a-zA-Z0-9-]+)'
+severity: medium
+category: reconnaissance
+description: 检测对AWS S3存储桶的枚举尝试，识别可能的云存储资源探测行为

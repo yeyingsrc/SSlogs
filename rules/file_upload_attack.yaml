@@ -1,0 +1,5 @@
+name: 恶意文件上传攻击检测
+pattern: '(/upload|/file-upload|/upload-file|/avatar-upload|/image-upload).*\.(php|asp|jsp|aspx|exe|sh|py|pl|cgi|php5|php7|phtml|shtml)'
+severity: high
+category: file_upload
+description: 检测对上传接口的恶意文件上传尝试，包括可执行脚本文件和系统命令文件

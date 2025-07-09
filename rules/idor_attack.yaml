@@ -1,0 +1,5 @@
+name: 不安全直接对象引用(IDOR)检测
+pattern: '(/user/\d+|/account/\d+|/order/\d+|/record/\d+|/document/\d+|/file/\d+)'
+severity: high
+category: access_control
+description: 检测对包含数字ID的资源路径的访问尝试，可能存在不安全直接对象引用漏洞，导致未授权数据访问

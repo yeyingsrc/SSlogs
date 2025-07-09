@@ -1,0 +1,5 @@
+name: 服务器端请求伪造(SSRF)检测
+pattern: '(http|https)://(localhost|127\.0\.0\.1|192\.168\.|10\.|172\.(1[6-9]|2[0-9]|3[0-1])\.)'
+severity: high
+category: ssrf
+description: 检测服务器端请求伪造攻击模式，包括对本地地址和私有IP范围的请求尝试

@@ -1,0 +1,5 @@
+name: 暴力破解攻击检测
+pattern: '(/login|/wp-login\.php|/admin/login|/user/login|/auth/login)\?.*?(username|user|email)=.*&(password|pass)='
+severity: medium
+category: brute_force
+description: 检测对常见登录页面的暴力破解尝试，包括多次提交用户名和密码参数的请求

@@ -1,0 +1,5 @@
+name: 目录列表访问检测
+pattern: '(/uploads/|/images/|/files/|/documents/|/data/|/media/|/backup/)$'
+severity: medium
+category: misconfiguration
+description: 检测对常见敏感目录的访问尝试，可能导致目录列表信息泄露

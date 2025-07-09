@@ -1,0 +1,19 @@
+name: "异常HTTP方法检测"
+pattern:
+  request_method: "(?i)(TRACE|TRACK|DEBUG|OPTIONS|PROPFIND|PROPPATCH|MKCOL|COPY|MOVE|DELETE|LOCK|UNLOCK|PATCH|HEAD|CONNECT|PUT)"
+  request_path: "(?i).*(web\\.config|app\\.config|machine\\.config|\\.htaccess|\\.htpasswd|httpd\\.conf|apache\\.conf|nginx\\.conf|\\.env|\\.git|\\.svn|\\.hg|\\.bzr|CVS|\\.DS_Store|thumbs\\.db|desktop\\.ini|folder\\.htt|\\.bash_history|\\.zsh_history|\\.mysql_history|\\.psql_history|id_rsa|id_dsa|authorized_keys|known_hosts)"
+severity: "medium"
+category: "enumeration"
+description: "检测异常HTTP方法和敏感文件访问尝试"
+cwe: "CWE-200"
+references:
+  - "https://attack.mitre.org/techniques/T1083/"
+  - "https://attack.mitre.org/techniques/T1005/"
+attack_patterns:
+  - "HTTP方法枚举"
+  - "敏感文件探测"
+  - "配置文件访问"
+  - "版本控制泄露"
+response_codes: [200, 404, 403, 401, 405, 500]
+threat_level: "medium"
+impact: "敏感信息泄露，配置暴露"

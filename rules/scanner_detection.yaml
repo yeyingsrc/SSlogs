@@ -1,0 +1,19 @@
+name: "安全扫描器检测"
+pattern:
+  user_agent: "(?i)(nikto|dirbuster|sqlmap|w3af|arachni|netsparker|acunetix|burp|suite|zap|goscan|masscan|nmap|openvas|nessus|rapid7|metasploit|cobalt|strike|nuclei|subfinder|httpx|ffuf|gobuster|dirb|wfuzz|hydra|medusa|john|hashcat|enum4linux|smbclient|nbtscan|snmpwalk|whatweb|wafw00f|wpscan|joomscan|droopescan|skipfish|uniscan|grabber|vega|webscarab|paros|spike|brutus|thc|saint|retina|core|impact|canvas|immunity|nexpose|qualys|rapid7|tenable)"
+  request_path: "(?i).*(admin|login|manager|console|config|setup|install|test|debug|dev|staging|backup|old|tmp|temp|bak|conf|cfg|ini|xml|json|yml|yaml|sql|db|database|phpmyadmin|adminer|webadmin|cpanel|plesk|directadmin)"
+severity: "high"
+category: "reconnaissance"
+description: "检测常见安全扫描工具和目录枚举工具，包括商用和开源扫描器"
+cwe: "CWE-200"
+references:
+  - "https://attack.mitre.org/techniques/T1595/"
+  - "https://attack.mitre.org/techniques/T1590/"
+attack_patterns:
+  - "漏洞扫描"
+  - "目录枚举"
+  - "信息收集"
+  - "指纹识别"
+response_codes: [200, 404, 403, 401, 500]
+threat_level: "high"
+impact: "系统信息泄露，为后续攻击做准备"

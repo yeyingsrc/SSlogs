@@ -1,0 +1,5 @@
+name: 云服务元数据访问检测
+pattern: '(http://169\.254\.169\.254/(latest/meta-data|metadata/v1|computeMetadata/v1beta1)|X-Google-Metadata-Request: True)'
+severity: critical
+category: cloud_security
+description: 检测对云服务元数据服务的访问尝试，包括AWS EC2、Azure和GCP实例的敏感元数据端点，可能导致凭证和配置信息泄露

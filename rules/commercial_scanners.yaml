@@ -1,0 +1,19 @@
+name: "商用安全扫描器检测"
+pattern:
+  user_agent: "(?i)(nessus|openvas|nexpose|qualys|rapid7|tenable|greenbone|saint|retina|core|impact|canvas|immunity|appscan|webinspect|fortify|checkmarx|veracode|whitesource|snyk|sonarqube|clair|anchore|twistlock|prisma|aqua|sysdig)"
+  request_path: "(?i).*(cgi-bin|scripts|CFIDE|cfusion|administrator|admin|manager|console|weblogic|jmx-console|web-console|status|info|health|metrics|actuator|jolokia|hawtio|swagger|api-docs|graphql|rest|soap|wsdl|wadl)"
+severity: "high"
+category: "reconnaissance"
+description: "检测商用安全扫描器和企业级漏洞评估工具"
+cwe: "CWE-200"
+references:
+  - "https://attack.mitre.org/techniques/T1595/"
+  - "https://attack.mitre.org/techniques/T1592/"
+attack_patterns:
+  - "企业漏洞扫描"
+  - "合规性检查"
+  - "资产发现"
+  - "配置审计"
+response_codes: [200, 404, 403, 401, 500]
+threat_level: "medium"
+impact: "企业资产暴露，配置信息泄露"

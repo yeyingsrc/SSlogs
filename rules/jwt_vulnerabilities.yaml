@@ -1,0 +1,5 @@
+name: JWT安全漏洞检测
+pattern: '("alg":"none"|eyJhbGciOiJub25lIn0|"alg":"HS256".*?"kid":".*?/|"alg":"RS256".*?"sign":")'
+severity: critical
+category: authentication
+description: 检测常见JWT安全漏洞，包括无算法签名(none)、密钥注入和弱签名算法配置

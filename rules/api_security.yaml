@@ -1,0 +1,5 @@
+name: API安全检测
+pattern: '(query\s+\{\s*__schema|query\s+\{\s*__type|api_key=|api-key=|token=|access_token=)'
+severity: medium
+category: api_security
+description: 检测常见API安全问题，包括GraphQL introspection查询和API密钥在URL参数中暴露的情况

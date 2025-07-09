@@ -1,0 +1,5 @@
+name: 命令注入攻击检测
+pattern: '(\;|\&\&|\|\||\|)\s*(ls|cat|rm|whoami|id|ping|nc|netcat|bash|sh|cmd\.exe|powershell)'
+severity: high
+category: command_injection
+description: 检测常见的命令注入攻击模式，包括命令分隔符和系统命令执行尝试

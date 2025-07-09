@@ -1,0 +1,5 @@
+name: LDAP注入攻击检测
+pattern: '(\(|\)|&|\||!|=|\*|~|>=|<=|\\*|\\(|\\))'
+severity: high
+category: injection
+description: 检测常见的LDAP注入攻击模式，包括特殊字符和逻辑运算符的滥用

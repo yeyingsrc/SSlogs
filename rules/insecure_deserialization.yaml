@@ -1,0 +1,5 @@
+name: 不安全反序列化检测
+pattern: '(rO0AB|\{\s*"@type"\s*:|O:\d+:\".+?\":|\$\$TYPE\$\$|\[B@|\xAC\xED\x00\x05|\x00\x00\x00\x00)'
+severity: critical
+category: deserialization
+description: 检测常见的不安全反序列化模式，包括Java、PHP、Python等语言的序列化数据格式

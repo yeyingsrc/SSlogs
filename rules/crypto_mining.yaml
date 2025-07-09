@@ -1,0 +1,18 @@
+name: "加密货币挖矿攻击检测"
+pattern:
+  request_path: "(?i).*(mining|miner|pool|xmrig|cpuminer|monero|bitcoin|ethereum|crypto|coin|hash|mine|stratum|4thepool)"
+  user_agent: "(?i)(mining|miner|xmrig|cpuminer)"
+severity: "high"
+category: "crypto_mining"
+description: "检测加密货币挖矿相关攻击和恶意软件下载"
+cwe: "CWE-506"
+references:
+  - "https://attack.mitre.org/techniques/T1496/"
+  - "https://owasp.org/www-project-web-security-testing-guide/"
+attack_patterns:
+  - "挖矿软件下载"
+  - "恶意脚本执行"
+  - "资源劫持"
+response_codes: [200, 301, 302]
+threat_level: "critical"
+impact: "系统资源被恶意消耗，可能导致性能严重下降"
