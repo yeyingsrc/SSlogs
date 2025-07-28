@@ -2,6 +2,7 @@ import re
 import json
 import codecs
 import logging
+from urllib.parse import urlparse, parse_qs
 from typing import Dict, Optional, List
 
 logger = logging.getLogger(__name__)
@@ -75,13 +76,17 @@ class LogParser:
         result = {}
         remaining_line = line
         
-        for field_name, pattern in zip(self.field_names, self.field_patterns):
+        # 预编译正则表达式以提高性能
+        compiled_patterns = []
+        for pattern in self.field_patterns:
+            # 确保模式有捕获组
+            if '(' not in pattern:
+                pattern = f'({pattern})'
+            compiled_patterns.append(re.compile(pattern))
+        
+        for field_name, pattern in zip(self.field_names, compiled_patterns):
             try:
-                # 确保模式有捕获组
-                if '(' not in pattern:
-                    pattern = f'({pattern})'
-                
-                match = re.search(pattern, remaining_line)
+                match = pattern.search(remaining_line)
                 if match:
                     result[field_name] = match.group(1)
                     # 移除已匹配的部分
@@ -127,12 +132,14 @@ class LogParser:
     def _parse_url_params(self, result: Dict[str, str]):
         """解析URL参数"""
         try:
-            from urllib.parse import urlparse, parse_qs
             url = result.get('url', '')
             if url:
                 parsed_url = urlparse(url)
                 result['query_params'] = parse_qs(parsed_url.query)
                 result['path'] = parsed_url.path
+        except ValueError as e:
+            logger.warning(f"URL格式无效: {e}")
+            result['query_params'] = {}
         except Exception as e:
             logger.warning(f"URL参数解析失败: {e}")
             result['query_params'] = {}
