@@ -48,7 +48,7 @@ report:
   output_format: html
   output_directory: reports
 deepseek:
-  api_key: sk-vygfmyaluapwxkzacchicoxkhovgwqurwprvjjdfvdbptxox
+  api_key: sk-xxxxxxxxxxxxxxxxxxx
   model: deepseek-ai/DeepSeek-V3
   base_url: https://api.siliconflow.cn/v1/chat/completions
   timeout: 30
