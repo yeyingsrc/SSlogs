@@ -1,0 +1,11 @@
+{
+    "tmp_dir": "/tmp/custom_emergency_logs",
+    "max_workers": 8,
+    "max_file_size_mb": 200,
+    "search_depth": 4,
+    "log_level": "INFO",
+    "additional_paths": [
+        "/var/log/custom/*.log",
+        "/opt/app/logs/access*.log"
+    ]
+}

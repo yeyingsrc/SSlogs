@@ -1,0 +1,790 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset='UTF-8'>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SSlogs 安全分析平台 - {{ generated_at }}</title>
+    <style>
+        :root {
+            --primary-color: #0066cc;
+            --secondary-color: #f8f9fa;
+            --border-color: #e1e5e9;
+            --text-primary: #2d3748;
+            --text-secondary: #718096;
+            --danger-color: #e53e3e;
+            --warning-color: #dd6b20;
+            --success-color: #38a169;
+            --bg-light: #f7fafc;
+            --shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background-color: var(--bg-light);
+            color: var(--text-primary);
+            line-height: 1.6;
+        }
+
+        .app-container {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Header */
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 1rem 2rem;
+            box-shadow: var(--shadow-lg);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .server-info {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            font-size: 0.9rem;
+        }
+
+        /* Main Container */
+        .main-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+            flex: 1;
+        }
+
+        /* Tab Navigation */
+        .tab-navigation {
+            background: white;
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+            margin-bottom: 2rem;
+            overflow: hidden;
+        }
+
+        .tab-nav {
+            display: flex;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .tab-nav-item {
+            flex: 1;
+            padding: 1rem 1.5rem;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 0.95rem;
+            font-weight: 500;
+            color: var(--text-secondary);
+            transition: all 0.2s;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .tab-nav-item:hover {
+            background-color: var(--secondary-color);
+            color: var(--text-primary);
+        }
+
+        .tab-nav-item.active {
+            color: var(--primary-color);
+            background-color: white;
+        }
+
+        .tab-nav-item.active::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: var(--primary-color);
+        }
+
+        /* Tab Content */
+        .tab-content {
+            padding: 2rem;
+        }
+
+        .tab-pane {
+            display: none;
+        }
+
+        .tab-pane.active {
+            display: block;
+        }
+
+        /* Dashboard Stats */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+            border-left: 4px solid var(--primary-color);
+            transition: transform 0.2s;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-label {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-weight: 500;
+        }
+
+        .stat-card.high { border-left-color: var(--danger-color); }
+        .stat-card.medium { border-left-color: var(--warning-color); }
+        .stat-card.low { border-left-color: var(--success-color); }
+
+        /* Section Cards */
+        .section-card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+            margin-bottom: 1.5rem;
+            overflow: hidden;
+        }
+
+        .section-header {
+            padding: 1.5rem 2rem;
+            border-bottom: 1px solid var(--border-color);
+            background: var(--secondary-color);
+        }
+
+        .section-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .section-content {
+            padding: 2rem;
+        }
+
+        /* Tables */
+        .table-container {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+        }
+
+        th, td {
+            padding: 1rem;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        th {
+            background: var(--secondary-color);
+            font-weight: 600;
+            color: var(--text-primary);
+            font-size: 0.9rem;
+        }
+
+        tr:hover {
+            background: var(--secondary-color);
+        }
+
+        /* Badges */
+        .severity-badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .severity-badge.high {
+            background: rgba(229, 62, 62, 0.1);
+            color: var(--danger-color);
+        }
+
+        .severity-badge.medium {
+            background: rgba(221, 107, 32, 0.1);
+            color: var(--warning-color);
+        }
+
+        .severity-badge.low {
+            background: rgba(56, 161, 105, 0.1);
+            color: var(--success-color);
+        }
+
+        /* Security Events */
+        .event-card {
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            margin-bottom: 1.5rem;
+            background: white;
+        }
+
+        .event-header {
+            padding: 1rem 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: var(--secondary-color);
+        }
+
+        .event-title {
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .event-details {
+            padding: 1.5rem;
+        }
+
+        .detail-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .detail-item {
+            padding: 0.75rem;
+            background: var(--secondary-color);
+            border-radius: 6px;
+        }
+
+        .detail-label {
+            font-weight: 600;
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+            margin-bottom: 0.25rem;
+        }
+
+        .detail-value {
+            color: var(--text-primary);
+            word-break: break-all;
+        }
+
+        /* AI Analysis */
+        .ai-analysis {
+            background: linear-gradient(135deg, #e3f2fd 0%, #f3e5f5 100%);
+            padding: 1.5rem;
+            border-radius: 8px;
+            border-left: 4px solid var(--primary-color);
+            margin-top: 1rem;
+        }
+
+        .ai-analysis h4 {
+            color: var(--primary-color);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .ai-analysis pre {
+            background: white;
+            padding: 1rem;
+            border-radius: 6px;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+
+        /* Configuration Section */
+        .config-section {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .config-group {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+        }
+
+        .config-group h3 {
+            color: var(--text-primary);
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid var(--primary-color);
+        }
+
+        .config-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.5rem 0;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .config-item:last-child {
+            border-bottom: none;
+        }
+
+        .config-label {
+            font-weight: 500;
+            color: var(--text-secondary);
+        }
+
+        .config-value {
+            color: var(--text-primary);
+            font-family: monospace;
+            background: var(--secondary-color);
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+        }
+
+        /* No Data State */
+        .no-data {
+            text-align: center;
+            padding: 3rem;
+            color: var(--text-secondary);
+        }
+
+        .no-data-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            opacity: 0.5;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .main-container {
+                padding: 1rem;
+            }
+
+            .tab-nav {
+                flex-direction: column;
+            }
+
+            .tab-content {
+                padding: 1rem;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .header-content {
+                flex-direction: column;
+                gap: 1rem;
+                text-align: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-content">
+                <div class="logo">
+                    🔒 SSlogs 安全分析平台
+                </div>
+                <div class="server-info">
+                    📅 {{ generated_at }} | 🎯 {{ server_ip }}
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Container -->
+        <main class="main-container">
+            <!-- Tab Navigation -->
+            <div class="tab-navigation">
+                <nav class="tab-nav">
+                    <button class="tab-nav-item active" data-tab="dashboard">
+                        📊 安全概览
+                    </button>
+                    <button class="tab-nav-item" data-tab="events">
+                        🚨 安全事件
+                    </button>
+                    <button class="tab-nav-item" data-tab="network">
+                        🌐 网络分析
+                    </button>
+                    <button class="tab-nav-item" data-tab="configuration">
+                        ⚙️ 配置信息
+                    </button>
+                </nav>
+
+                <!-- Dashboard Tab -->
+                <div class="tab-content">
+                    <div id="dashboard" class="tab-pane active">
+                        <!-- Stats Grid -->
+                        <div class="stats-grid">
+                            <div class="stat-card">
+                                <div class="stat-number">{{ severity_stats.high + severity_stats.medium + severity_stats.low }}</div>
+                                <div class="stat-label">安全事件总数</div>
+                            </div>
+                            <div class="stat-card high">
+                                <div class="stat-number">{{ severity_stats.high }}</div>
+                                <div class="stat-label">高危事件</div>
+                            </div>
+                            <div class="stat-card medium">
+                                <div class="stat-number">{{ severity_stats.medium }}</div>
+                                <div class="stat-label">中危事件</div>
+                            </div>
+                            <div class="stat-card low">
+                                <div class="stat-number">{{ severity_stats.low }}</div>
+                                <div class="stat-label">低危事件</div>
+                            </div>
+                        </div>
+
+                        <!-- Attack Types -->
+                        {% if attack_type_stats %}
+                        <div class="section-card">
+                            <div class="section-header">
+                                <h2 class="section-title">🎯 攻击类型TOP10</h2>
+                            </div>
+                            <div class="section-content">
+                                <div class="table-container">
+                                    <table>
+                                        <thead>
+                                            <tr>
+                                                <th>排名</th>
+                                                <th>攻击类型</th>
+                                                <th>事件数量</th>
+                                                <th>占比</th>
+                                                <th>最高风险级别</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for attack in attack_type_stats[:10] %}
+                                            <tr>
+                                                <td>{{ loop.index }}</td>
+                                                <td>{{ attack.type }}</td>
+                                                <td>{{ attack.count }}</td>
+                                                <td>{{ "%.1f"|format((attack.count / (severity_stats.high + severity_stats.medium + severity_stats.low)) * 100) }}%</td>
+                                                <td><span class="severity-badge {{ attack.max_severity }}">{{ attack.max_severity }}</span></td>
+                                            </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Security Events Tab -->
+                    <div id="events" class="tab-pane">
+                        <div class="section-card">
+                            <div class="section-header">
+                                <h2 class="section-title">🚨 安全事件详情</h2>
+                            </div>
+                            <div class="section-content">
+                                {% if security_events %}
+                                    {% for event in security_events %}
+                                    <div class="event-card">
+                                        <div class="event-header">
+                                            <div class="event-title">事件 #{{ event.index }}: {{ event.rule.name }}</div>
+                                            <span class="severity-badge {{ event.severity }}">{{ event.severity }}</span>
+                                        </div>
+                                        <div class="event-details">
+                                            <div class="detail-grid">
+                                                <div class="detail-item">
+                                                    <div class="detail-label">攻击类型</div>
+                                                    <div class="detail-value">{{ event.rule.category or '未知' }}</div>
+                                                </div>
+                                                <div class="detail-item">
+                                                    <div class="detail-label">源IP地址</div>
+                                                    <div class="detail-value">{{ event.log_entry.src_ip or '未知' }}</div>
+                                                </div>
+                                                <div class="detail-item">
+                                                    <div class="detail-label">攻击时间</div>
+                                                    <div class="detail-value">{{ event.log_entry.timestamp or '未知' }}</div>
+                                                </div>
+                                                <div class="detail-item">
+                                                    <div class="detail-label">请求方法</div>
+                                                    <div class="detail-value">{{ event.log_entry.method or '未知' }}</div>
+                                                </div>
+                                                <div class="detail-item">
+                                                    <div class="detail-label">攻击路径</div>
+                                                    <div class="detail-value">{{ event.log_entry.url or '未知' }}</div>
+                                                </div>
+                                                <div class="detail-item">
+                                                    <div class="detail-label">用户代理</div>
+                                                    <div class="detail-value">{{ event.log_entry.user_agent or '未知' }}</div>
+                                                </div>
+                                            </div>
+                                            
+                                            {% if event.ai_result %}
+                                            <div class="ai-analysis">
+                                                <h4>🤖 AI安全分析</h4>
+                                                <pre>{{ event.ai_result }}</pre>
+                                            </div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                    {% endfor %}
+                                {% else %}
+                                    <div class="no-data">
+                                        <div class="no-data-icon">🛡️</div>
+                                        <p>暂无安全事件记录</p>
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Network Analysis Tab -->
+                    <div id="network" class="tab-pane">
+                        <!-- External IPs -->
+                        {% if external_ip_details %}
+                        <div class="section-card">
+                            <div class="section-header">
+                                <h2 class="section-title">🌍 外网IP访问分析</h2>
+                            </div>
+                            <div class="section-content">
+                                <div class="table-container">
+                                    <table>
+                                        <thead>
+                                            <tr>
+                                                <th>IP地址</th>
+                                                <th>访问次数</th>
+                                                <th>地理位置</th>
+                                                <th>风险等级</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for ip_info in external_ip_details %}
+                                            <tr>
+                                                <td>{{ ip_info.ip }}</td>
+                                                <td>{{ ip_info.count }}</td>
+                                                <td>{{ ip_info.location }}</td>
+                                                <td>
+                                                    {% if ip_info.count > 100 %}
+                                                        <span class="severity-badge high">HIGH</span>
+                                                    {% elif ip_info.count > 10 %}
+                                                        <span class="severity-badge medium">MEDIUM</span>
+                                                    {% else %}
+                                                        <span class="severity-badge low">LOW</span>
+                                                    {% endif %}
+                                                </td>
+                                            </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                        {% endif %}
+
+                        <!-- Internal IPs -->
+                        {% if internal_ips %}
+                        <div class="section-card">
+                            <div class="section-header">
+                                <h2 class="section-title">🏠 内网IP访问统计</h2>
+                            </div>
+                            <div class="section-content">
+                                <div class="table-container">
+                                    <table>
+                                        <thead>
+                                            <tr>
+                                                <th>IP地址</th>
+                                                <th>访问次数</th>
+                                                <th>访问占比</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% set total_internal = internal_ips.values() | sum %}
+                                            {% for ip, count in internal_ips.items() | sort(attribute='1', reverse=true) %}
+                                            <tr>
+                                                <td>{{ ip }}</td>
+                                                <td>{{ count }}</td>
+                                                <td>{{ "%.1f"|format((count / total_internal * 100) if total_internal > 0 else 0) }}%</td>
+                                            </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                        {% endif %}
+
+                        {% if not external_ip_details and not internal_ips %}
+                        <div class="no-data">
+                            <div class="no-data-icon">🌐</div>
+                            <p>暂无网络访问数据</p>
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Configuration Tab -->
+                    <div id="configuration" class="tab-pane">
+                        <div class="config-section">
+                            <div class="config-group">
+                                <h3>🎯 服务器信息</h3>
+                                <div class="config-item">
+                                    <span class="config-label">服务器IP</span>
+                                    <span class="config-value">{{ server_ip }}</span>
+                                </div>
+                                <div class="config-item">
+                                    <span class="config-label">分析时间</span>
+                                    <span class="config-value">{{ generated_at }}</span>
+                                </div>
+                            </div>
+
+                            <div class="config-group">
+                                <h3>📊 统计信息</h3>
+                                <div class="config-item">
+                                    <span class="config-label">总事件数</span>
+                                    <span class="config-value">{{ severity_stats.high + severity_stats.medium + severity_stats.low }}</span>
+                                </div>
+                                <div class="config-item">
+                                    <span class="config-label">高危事件</span>
+                                    <span class="config-value">{{ severity_stats.high }}</span>
+                                </div>
+                                <div class="config-item">
+                                    <span class="config-label">中危事件</span>
+                                    <span class="config-value">{{ severity_stats.medium }}</span>
+                                </div>
+                                <div class="config-item">
+                                    <span class="config-label">低危事件</span>
+                                    <span class="config-value">{{ severity_stats.low }}</span>
+                                </div>
+                            </div>
+
+                            <div class="config-group">
+                                <h3>🌐 网络统计</h3>
+                                <div class="config-item">
+                                    <span class="config-label">外网IP数量</span>
+                                    <span class="config-value">{{ external_ip_details | length }}</span>
+                                </div>
+                                <div class="config-item">
+                                    <span class="config-label">内网IP数量</span>
+                                    <span class="config-value">{{ internal_ips | length }}</span>
+                                </div>
+                            </div>
+
+                            <div class="config-group">
+                                <h3>🔧 系统配置</h3>
+                                <div class="config-item">
+                                    <span class="config-label">报告版本</span>
+                                    <span class="config-value">SSlogs v2.0</span>
+                                </div>
+                                <div class="config-item">
+                                    <span class="config-label">分析引擎</span>
+                                    <span class="config-value">AI Enhanced</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // Tab Navigation
+        document.addEventListener('DOMContentLoaded', function() {
+            const tabNavItems = document.querySelectorAll('.tab-nav-item');
+            const tabPanes = document.querySelectorAll('.tab-pane');
+
+            tabNavItems.forEach(item => {
+                item.addEventListener('click', function() {
+                    const targetTab = this.getAttribute('data-tab');
+
+                    // Remove active class from all nav items and panes
+                    tabNavItems.forEach(nav => nav.classList.remove('active'));
+                    tabPanes.forEach(pane => pane.classList.remove('active'));
+
+                    // Add active class to clicked nav item and corresponding pane
+                    this.classList.add('active');
+                    document.getElementById(targetTab).classList.add('active');
+                });
+            });
+
+            // Add smooth transitions
+            tabPanes.forEach(pane => {
+                pane.style.transition = 'opacity 0.3s ease-in-out';
+            });
+        });
+
+        // Add interactive features
+        document.addEventListener('DOMContentLoaded', function() {
+            // Add hover effects to stat cards
+            const statCards = document.querySelectorAll('.stat-card');
+            statCards.forEach(card => {
+                card.addEventListener('mouseenter', function() {
+                    this.style.transform = 'translateY(-4px)';
+                });
+                card.addEventListener('mouseleave', function() {
+                    this.style.transform = 'translateY(0)';
+                });
+            });
+
+            // Add click-to-copy for IP addresses
+            const ipElements = document.querySelectorAll('td:first-child');
+            ipElements.forEach(el => {
+                if (el.textContent.match(/^\d+\.\d+\.\d+\.\d+$/)) {
+                    el.style.cursor = 'pointer';
+                    el.title = '点击复制IP地址';
+                    el.addEventListener('click', function() {
+                        navigator.clipboard.writeText(this.textContent);
+                        const originalText = this.textContent;
+                        this.textContent = '已复制!';
+                        setTimeout(() => {
+                            this.textContent = originalText;
+                        }, 1000);
+                    });
+                }
+            });
+        });
+    </script>
+</body>
+</html>
