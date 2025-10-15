@@ -1,0 +1,86 @@
+name: 移动应用安全威胁检测
+pattern:
+  # 移动API安全威胁
+  user_agent: '(Android|iOS|iPhone|iPad).*(Debug|Test|Root|Jailbreak)'
+  user_agent: '(Dalvik|ART|CFNetwork).*?(Debug|Development|Testing)'
+  request_headers: '(X-App-Version|X-Platform|X-Device-ID):\s*(debug|test|root|jailbreak)'
+
+  # 移动证书绕过
+  request_headers: '(X-SSL-Pinning|X-Certificate-Bypass):\s*(disabled|bypass|off)'
+  params: '(ssl|certificate|pinning).*(disable|bypass|ignore|override)'
+  user_agent: '(Charles|Burp|Fiddler|Proxy|HTTP Toolkit)'
+
+  # 移动数据泄露
+  params: '(imei|imsi|iccid|mac|serial).*[0-9a-fA-F]{8,}'
+  params: '(phone|mobile|device).*(number|id|imei|imsi).*[\d\-\+\(\)]{10,}'
+  request_body: '{"(deviceId|deviceFingerprint|advertisingId)":\s*"[0-9a-fA-F]{16,}"}'
+
+  # 移动支付攻击
+  params: '(applepay|googlepay|samsungpay|alipay|wechat).*(fraud|abuse|bypass)'
+  request_path: '/api/(mobile|app)/(payment|purchase|billing)/'
+  request_body: '{"(receipt|token|signature)":\s*"(fake|test|mock|invalid)"}'
+
+  # 移动游戏安全
+  params: '(game|score|level|coin|gem).*(hack|cheat|mod|exploit|abuse)'
+  params: '(in.*?app|purchase|premium).*(bypass|crack|hack|unlock)'
+  request_path: '/api/(mobile|app)/(game|leaderboard|achievement)/'
+
+  # 移动隐私威胁
+  params: '(camera|microphone|location|contact|photo).*(access|use|read|export)'
+  params: '(privacy|sensitive|personal).*(data|info).*(leak|expose|steal)'
+  request_headers: '(X-Permission|X-Privacy):\s*(camera|microphone|location|contacts)'
+
+  # 移动设备越狱/Root检测绕过
+  user_agent: '(Frida|Xposed|Substrate|Cydia|root|jailbreak)'
+  params: '(root|jailbreak|su|sudo).*(bypass|hide|disable|detect)'
+  request_body: '{"(isRooted|isJailbroken|hasDebug)":\s*(false|bypass|hidden)}'
+
+  # 移动网络协议攻击
+  request_headers: '(X-Mobile-Network|X-Carrier|X-Network-Type):'
+  params: '(gsm|cdma|lte|5g|wifi).*(hijack|spoof|intercept|exploit)'
+  request_path: '/api/(mobile|app)/(network|connectivity|carrier)/'
+
+  # 移动应用逆向
+  user_agent: '(Apktool|Jadx|Ghidra|IDA|Hopper|MobSF|QARK)'
+  params: '(apk|ipa|dex|class|smali).*(decompile|analyze|reverse|extract)'
+  request_headers: '(X-Debug|X-Hook|X-Trace):\s*(enabled|active|on)'
+
+  # 移动认证攻击
+  params: '(biometric|fingerprint|faceid|touchid).*(bypass|spoof|hack|disable)'
+  params: '(2fa|mfa|totp|otp).*(bypass|brute|force|exploit)'
+  request_path: '/api/(mobile|app)/(auth|login|verify)/'
+
+severity: high
+category: mobile_security
+description: |
+  检测移动应用程序中的安全威胁，包括：
+  - 移动API安全漏洞和数据泄露
+  - SSL证书绕过和中间人攻击
+  - 移动设备指纹识别和隐私保护
+  - 移动支付安全和应用内购买攻击
+  - 移动游戏安全和作弊检测
+  - 移动权限滥用和隐私威胁
+  - 设备越狱/Root检测绕过
+  - 移动网络协议攻击
+  - 应用逆向工程和代码窃取
+  - 生物识别和多因素认证绕过
+
+  攻击特征：
+  - 移动平台特定User-Agent
+  - 移动API端点识别
+  - 设备指纹和标识符
+  - 移动网络协议特征
+cwe: "CWE-919"
+references:
+  - "https://owasp.org/www-project-mobile-top-10/"
+  - "https://github.com/OWASP/owasp-masvs"
+  - "https://developer.android.com/topic/security"
+attack_patterns:
+  - "API滥用"
+  - "证书绕过"
+  - "数据泄露"
+  - "应用逆向"
+  - "支付攻击"
+response_codes: [200, 201, 400, 401, 403, 500]
+threat_level: "high"
+impact: "可能导致用户数据泄露、支付损失或应用功能被滥用"

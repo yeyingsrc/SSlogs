@@ -16,9 +16,11 @@ class ReportGenerator:
         self.templates_dir.mkdir(exist_ok=True)
         self._stats_cache = {}
 
-    def generate_report(self, matched_logs: List[Dict[str, Any]], ai_results: List[str], 
-                       report_type: str = "html", internal_ips: Optional[Dict[str, int]] = None, 
-                       external_ip_details: Optional[List[Dict[str, Any]]] = None, 
+    @performance_monitor(name="report_generation", track_memory=True)
+    @error_rate_monitor(window_size=5)
+    def generate_report(self, matched_logs: List[Dict[str, Any]], ai_results: List[str],
+                       report_type: str = "html", internal_ips: Optional[Dict[str, int]] = None,
+                       external_ip_details: Optional[List[Dict[str, Any]]] = None,
                        server_ip: str = "unknown") -> str:
         """生成日志分析报告"""
         try:
@@ -60,14 +62,17 @@ class ReportGenerator:
         """构建HTML格式报告 - 优化版本"""
         try:
             css_content = self._load_css_styles()
-            html_parts = [
-                self._build_html_header(report_data['metadata'], css_content),
-                self._build_stats_section(report_data['metadata']),
-                self._build_attack_types_section(report_data['metadata']['attack_type_stats']),
-                self._build_ip_statistics_section(report_data['ip_statistics']),
-                self._build_security_events_section(report_data['security_events']),
-                self._build_html_footer()
-            ]
+            
+            # 构建HTML内容的各个部分
+            header = self._build_html_header(report_data['metadata'], css_content)
+            stats_section = self._build_stats_section(report_data['metadata'])
+            attack_types_section = self._build_attack_types_section(report_data['metadata']['attack_type_stats'])
+            ip_statistics_section = self._build_ip_statistics_section(report_data['ip_statistics'])
+            security_events_section = self._build_security_events_section(report_data['security_events'])
+            footer = self._build_html_footer()
+            
+            # 拼接所有部分
+            html_parts = [header, stats_section, attack_types_section, ip_statistics_section, security_events_section, footer]
             return ''.join(html_parts)
         except Exception as e:
             logger.error(f"构建HTML内容失败: {e}")

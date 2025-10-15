@@ -1,0 +1,92 @@
+name: IoT物联网安全威胁检测
+pattern:
+  # IoT设备默认凭据攻击
+  user_agent: '(IoT|Embedded|Device|Camera|Router).*(Firmware|Boot|Loader)'
+  params: '(username|password|login).*(admin|root|default|password|123456|888888)'
+  request_headers: '(Authorization):\s*(Basic|Bearer).*?(YWRtaW46YWRtaW4=|cm9vdDpyb290|admin:admin)'
+
+  # IoT固件和软件攻击
+  params: '(firmware|software|update).*(download|install|flash|upgrade)'
+  request_path: '/(firmware|update|upgrade|flash).*?(\.bin|\.hex|\.fw|\.img)'
+  params: '(bootloader|uboot|kernel).*(dump|extract|backup|download)'
+
+  # IoT协议安全威胁
+  user_agent: '(MQTT|CoAP|AMQP|Zigbee|LoRa|Bluetooth|WiFi).*?(Client|Device)'
+  params: '(mqtt|coap|amqp).*(publish|subscribe|connect|auth).*?(injection|bypass|exploit)'
+  request_path: '/(mqtt|coap|api)/.*?(topic|queue|channel)'
+
+  # 摄像头和监控设备攻击
+  params: '(camera|webcam|surveillance|cctv).*(admin|root|password|login)'
+  request_path: '/(cgi-bin|api|dvr|cam).*?(snapshot|video|stream|control)'
+  params: '(rtsp|onvif|webrtc).*(url|stream).*(bypass|hack|exploit)'
+
+  # 智能家居设备攻击
+  params: '(smart|home|automation).*(lock|light|thermostat|speaker|tv).*?(control|hack|bypass)'
+  request_path: '/api/(smart|home)/(device|control|status).*?(on|off|open|close|unlock)'
+  user_agent: '(Alexa|Google-Home|Siri|SmartThings|Hubitat)'
+
+  # 工业IoT (IIoT) 安全威胁
+  params: '(modbus|opcua|profinet|bacnet|dnp3).*(read|write|control|scan)'
+  request_path: '/(scada|ics|plc|hmi|industrial)/.*?(control|command|status)'
+  params: '(plc|scada|hmi).*(password|login|admin|operator).*?(default|reset|bypass)'
+
+  # 车联网安全威胁
+  params: '(obd|can|bus|vehicle|car).*(diagnostic|control|hack|exploit)'
+  request_path: '/(api/v1)/(vehicle|car|obd)/.*?(speed|location|status|control)'
+  user_agent: '(Vehicle|Car|OBD|GPS|Telematics).*(Client|Device|System)'
+
+  # 医疗IoT设备安全
+  params: '(medical|health|pacemaker|insulin|monitor).*(control|hack|dos|exploit)'
+  request_path: '/(api/medical|health|device)/.*?(vital|status|control|dosage)'
+  params: '(patient|medical).*?(data|info).*(leak|expose|steal|access)'
+
+  # IoT网络基础设施攻击
+  params: '(router|gateway|bridge|hub).*(admin|password|login|config)'
+  request_path: '/(admin|config|setup|login).*?(router|gateway|access.*?point)'
+  params: '(wifi|wireless|ssid|password).*(hack|crack|bypass|share)'
+
+  # IoT传感器和数据攻击
+  params: '(sensor|actuator|telemetry).*(spoof|manipulate|inject|control)'
+  request_path: '/api/(sensor|data|telemetry)/.*?(submit|upload|report)'
+  request_body: '{"(temperature|humidity|pressure|status)":\s*(-999|999|NaN|overflow)'
+
+  # IoT僵尸网络和恶意软件
+  user_agent: '(Mirai|Hajime|HideNSeek|Brickerbot|IoTroop|Tsunami)'
+  params: '(botnet|ddos|bricker|mirai).*(infect|scan|exploit|control)'
+  request_headers: '(X-Infected|X-Botnet|X-DDoS):\s*(true|yes|1)'
+
+severity: critical
+category: iot_security
+description: |
+  检测物联网(IoT)生态系统的安全威胁，包括：
+  - IoT设备默认凭据和身份认证绕过
+  - 固件攻击和软件更新劫持
+  - IoT通信协议安全威胁（MQTT、CoAP、AMQP等）
+  - 监控摄像头和安防设备攻击
+  - 智能家居设备控制劫持
+  - 工业IoT(IIoT)和SCADA系统威胁
+  - 车联网(V2X)安全攻击
+  - 医疗IoT设备威胁
+  - 网络基础设施攻击
+  - 传感器数据欺骗和操控
+  - IoT僵尸网络和恶意软件
+
+  威胁特征：
+  - IoT设备特定协议和端口
+  - 固件文件和更新机制
+  - 传感器数据异常模式
+  - 设备指纹和硬件标识
+cwe: "CWE-1245"
+references:
+  - "https://owasp.org/www-project-iot-security-verification-standard/"
+  - "https://www.iotsecurityfoundation.org/"
+  - "https://cwe.mitre.org/data/definitions/1245.html"
+attack_patterns:
+  - "默认凭据滥用"
+  - "固件劫持"
+  - "协议攻击"
+  - "物理设备控制"
+  - "僵尸网络感染"
+response_codes: [200, 201, 401, 403, 500, 502]
+threat_level: "critical"
+impact: "可能导致物理设备控制、隐私泄露或基础设施破坏"

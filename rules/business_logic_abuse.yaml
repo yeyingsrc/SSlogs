@@ -1,0 +1,66 @@
+name: 业务逻辑安全威胁检测
+pattern:
+  # 支付系统攻击
+  params: '(price|amount|total|cost)=.*?(-|0\.0|0\.01|negativ|discount.*?100|free)'
+  params: '(payment|pay|checkout|order).*?(bypass|override|skip|hack|crack)'
+  request_path: '/(api/)?(payment|checkout|order|cart|purchase)/.*?(validate|verify|process|complete)'
+
+  # 优惠券和促销滥用
+  params: '(coupon|voucher|promo|discount).*?(brute|force|crack|bypass|abuse)'
+  params: '(code|promo).*?(stack|combine|multiple|unlimited|infinite)'
+  request_body: '"(discount|coupon|promo)".*?(100|%25|0|free|unlimited)'
+
+  # 用户权限和角色绕过
+  params: '(role|permission|access|level).*?(admin|root|super|elevated|escalate)'
+  params: '(user|account).*?(impersonate|switch|su|sudo|takeover)'
+  request_headers: '(X-Role|X-Permission|X-User-Type):\s*(admin|root|super)'
+
+  # 投票和评分系统攻击
+  params: '(vote|rating|score|poll).*?(bot|auto|script|bulk|mass)'
+  params: '(vote|rate).*?(multiple|duplicate|repeat|abuse|manipulation)'
+  request_path: '/(api/)?(vote|rating|poll|survey)/.*?(submit|cast|create)'
+
+  # 票务系统攻击
+  params: '(seat|ticket|booking).*?(hold|reserve|block|lock|release)'
+  params: '(price|fare).*?(manipulate|change|modify|override)'
+  request_body: '{"(quantity|count)":\s*(\d{2,}|999|[5-9]\d)}'
+
+  # 积分和奖励系统滥用
+  params: '(point|credit|reward|bonus).*?(farm|grind|abuse|exploit)'
+  params: '(level|xp|experience).*?(boost|hack|cheat|skip)'
+  request_path: '/(api/)?(user|account|profile)/.*?(points|credits|rewards)'
+
+  # 数据导出和爬取
+  params: '(export|download|dump|backup).*?(all|entire|complete|full)'
+  params: '(limit|offset|size).*?(9999|99999|-1|large|infinite)'
+  request_headers: '(X-Requested-With|User-Agent):\s*(bot|crawler|scraper|python|curl)'
+
+severity: high
+category: business_logic
+description: |
+  检测业务逻辑层面的安全威胁和滥用行为，包括：
+  - 支付系统绕过和价格篡改
+  - 优惠券和促销活动滥用
+  - 用户权限提升和角色绕过
+  - 投票和评分系统操纵
+  - 票务系统座位抢占和价格攻击
+  - 积分奖励系统刷取
+  - 大规模数据爬取和导出
+
+  攻击特征：
+  - 参数异常值检测
+  - 批量操作识别
+  - 权限绕过尝试
+  - 业务流程异常
+cwe: "CWE-840"
+references:
+  - "https://owasp.org/www-project-web-security-testing-guide/"
+  - "https://cwe.mitre.org/data/definitions/840.html"
+attack_patterns:
+  - "支付绕过"
+  - "权限提升"
+  - "业务流程篡改"
+  - "批量滥用"
+response_codes: [200, 201, 202, 400, 403]
+threat_level: "high"
+impact: "可能导致财务损失、业务流程破坏或数据泄露"

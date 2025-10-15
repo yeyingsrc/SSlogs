@@ -1,5 +1,52 @@
-name: SQL注入攻击检测
-pattern: '(union\s+select|select.*?from|insert.*?into|delete.*?from|drop\s+table|xp_cmdshell|exec\s+sp_|declare\s+@|sqlmap|benchmark\()'
-severity: high
+name: SQL注入攻击检测 (增强版)
+pattern:
+  # 基础SQL注入关键字
+  params: '(union\s+select|select\s+.*?\s+from|insert\s+into|delete\s+from|drop\s+table|alter\s+table|create\s+table|truncate\s+table|exec\s*\(|execute\s*\()'
+
+  # 高级注入技术
+  params: '(xp_cmdshell|sp_executesql|declare\s+@|set\s+@|waitfor\s+delay|benchmark\s*\(|sleep\s*\(|pg_sleep\s*\()'
+
+  # SQLMap和自动化工具
+  user_agent: '(sqlmap|havij|pangolin|bbscan|absinthe|netsparker|acunetix|appscan)'
+
+  # 编码和绕过技术
+  decoded_params: '(%27|%22|%2527|%2522|0x[0-9a-f]+|char\s*\(\s*\d+\s*\)|concat\s*\()'
+
+  # 盲注和时间注入
+  params: '(and\s+.*?=.+?sleep\(|or\s+.*?=.+?sleep\(|and\s+.*?=\s*\d+\s*\+\s*\d+|or\s+.*?=\s*\d+\s*\+\s*\d+)'
+
+  # NoSQL注入
+  params: '(\{\s*\$ne\s*:|\{\s*\$gt\s*:|\{\s*\$lt\s*:|\{\s*\$in\s*:|\{\s*\$nin\s*:|\{\s*\$where\s*:|\{\s*\$regex\s*:'
+
+  # 数据库指纹识别
+  params: '(@@version|version\s*\(\)|@@datadir|database\s*\(\)|user\s*\(\)|system_user\s*\(\)|session_user\s*\()'
+
+severity: critical
 category: injection
-description: 检测常见的SQL注入攻击模式，包括联合查询、数据操作语句和数据库命令执行尝试
+description: |
+  检测各种类型的SQL注入攻击，包括：
+  - 经典SQL注入（Union、Boolean、Time-based）
+  - 高级数据库攻击（存储过程、命令执行）
+  - 编码绕过和混淆技术
+  - 自动化注入工具检测
+  - NoSQL注入攻击
+  - 数据库指纹识别
+
+  增强检测：
+  - 多种编码格式识别
+  - 盲注和时间注入检测
+  - NoSLQ注入覆盖
+  - 工具特征识别
+cwe: "CWE-89"
+references:
+  - "https://owasp.org/www-community/attacks/SQL_Injection"
+  - "https://portswigger.net/web-security/sql-injection"
+attack_patterns:
+  - "联合查询注入"
+  - "布尔盲注"
+  - "时间盲注"
+  - "存储过程注入"
+  - "NoSQL注入"
+response_codes: [200, 404, 500, 502]
+threat_level: "critical"
+impact: "可能导致数据库完全妥协、数据泄露或系统控制"

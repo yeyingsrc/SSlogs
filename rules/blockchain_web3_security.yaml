@@ -1,0 +1,79 @@
+name: 区块链和Web3安全威胁检测
+pattern:
+  # 智能合约漏洞攻击
+  params: '(contract|0x[a-fA-F0-9]{40}).*?(reentrancy|recursive|call|drain|exploit)'
+  params: '(transfer|approve|allowance).*(infinite|unlimited|999999999|0xffffffff)'
+  request_body: '{"to":"0x[a-fA-F0-9]{40}".*?(amount|value):.*?[1-9]\d{15,}}'
+
+  # DeFi攻击模式
+  params: '(flashloan|flash.*?loan|arbitrage).*?(exploit|attack|drain|manipulate)'
+  params: '(liquidity|pool|pair).*(remove|drain|swap|manipulate|exploit)'
+  params: '(price|oracle).*(manipulate|spoof|control|exploit)'
+
+  # 钓鱼和欺诈攻击
+  request_path: '/connect/(metamask|walletconnect|coinbase)'
+  params: '(approve|sign|connect).*?(0x[a-fA-F0-9]{40}|phish|scam|fake)'
+  user_agent: '(phish|scam|malicious|fraud).*(crypto|blockchain|wallet)'
+
+  # NFT相关攻击
+  params: '(nft|token|721|1155).*(steal|drain|transfer|approve)'
+  params: '(opensea|rarible|foundation).*(exploit|vulnerability|hack)'
+  request_body: '{"(tokenId|id)":\s*\d+.*?(approve|transfer|setApprovalForAll)}'
+
+  # 私钥和助记词泄露
+  params: '(private.*?key|mnemonic|seed|phrase).*?[0-9a-fA-F]{64,}'
+  params: '(secret|key|password|backup).*(泄露|leak|expose|share)'
+  request_body: '[0-9a-fA-F]{64,}|[a-fA-F]{8}-[a-fA-F]{4}-[a-fA-F]{4}-[a-fA-F]{4}-[a-fA-F]{12}'
+
+  # 加密货币交易攻击
+  params: '(bitcoin|btc|ethereum|eth|usdt).*(double.*?spend|51.*%|attack|exploit)'
+  params: '(transaction|tx).*?(malleability|front.*run|back.*run|exploit)'
+  request_headers: '(X-API-Key|Authorization):\s*(0x[a-fA-F0-9]{64})'
+
+  # MEV (Maximum Extractable Value) 攻击
+  params: '(mev|max.*?extractable.*?value|front.*run|sandwich|arbitrage)'
+  params: '(gas|gwei|priority).*?(manipulate|control|spike|exploit)'
+  request_body: '{"gasPrice":\s*"(\d{10,}|999999999999)"}'
+
+  # 桥接和跨链攻击
+  params: '(bridge|cross.*?chain|wrap).*(exploit|vulnerability|hack|drain)'
+  params: '(token|asset).*(bridge|wrap|unwrap).*?(steal|lost|stuck)'
+  request_path: '/(bridge|crosschain|wrap|unwrap)/.*?(mint|burn|lock|unlock)'
+
+  # 智能合约升级和管理攻击
+  params: '(upgrade|admin|owner).*(unauthorized|bypass|exploit)'
+  params: '(proxy|implementation).*(hijack|drain|exploit|vulnerability)'
+  request_body: '{"(upgradeTo|changeAdmin|transferOwnership)":\s*"0x[a-fA-F0-9]{40}"}'
+
+severity: critical
+category: blockchain_security
+description: |
+  检测区块链和Web3生态系统中的安全威胁，包括：
+  - 智能合约漏洞利用（重入攻击、整数溢出、权限控制）
+  - DeFi协议攻击（闪电贷攻击、流动性挖矿漏洞、价格操纵）
+  - 钓鱼和欺诈攻击（假钱包、虚假授权、签名诈骗）
+  - NFT安全和数字资产攻击
+  - 私钥和助记词泄露检测
+  - MEV攻击和交易前置运行
+  - 跨链桥接安全威胁
+  - 智能合约管理权限攻击
+
+  威胁特征：
+  - 区块链地址模式识别
+  - 交易异常行为检测
+  - 合约函数调用分析
+  - Web3特定攻击向量
+cwe: "CWE-20"
+references:
+  - "https://owasp.org/www-project-smart-contract-top-10/"
+  - "https://consensys.github.io/smart-contract-best-practices/"
+  - "https://github.com/OpenZeppelin/openzeppelin-contracts"
+attack_patterns:
+  - "智能合约漏洞利用"
+  - "DeFi闪电贷攻击"
+  - "Web3钓鱼攻击"
+  - "MEV攻击"
+  - "跨链桥攻击"
+response_codes: [200, 201, 400, 401, 403, 500]
+threat_level: "critical"
+impact: "可能导致加密资产直接损失、智能合约控制或用户资产被盗"

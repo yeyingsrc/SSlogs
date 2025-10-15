@@ -1,0 +1,93 @@
+name: APT高级持续性威胁检测
+pattern:
+  # APT组织工具和基础设施
+  user_agent: '(APT|Lazarus|Fancy Bear|Cozy Bear|Equation Group|Shadow Brokers)'
+  user_agent: '(Stuxnet|Flame|Duqu|Gauss|RedLeaves|PlugX|Poison Ivy)'
+  params: '(cobalt.*?strike|beacon|c2|command.*?control).*(connect|checkin|heartbeat)'
+
+  # 供应链攻击模式
+  params: '(supply.*?chain|software.*?update|third.*?party).*(compromise|backdoor|trojan)'
+  request_path: '/(update|download|patch|upgrade)/.*?(\.exe|\.msi|\.zip|\.rar|\.jar)'
+  params: '(trusted|signed|verified).*(certificate|signature).*(fake|forged|stolen)'
+
+  # 零日漏洞利用
+  params: '(zero.*?day|0day|exploit).*?(cve|vulnerability|patch|security)'
+  params: '(unknown|novel|unpatched).*(vulnerability|exploit|weakness)'
+  user_agent: '(Metasploit|Canvas|Core|Impact|Immunity|Nessus|Exploit)'
+
+  # 横向移动和权限提升
+  params: '(lateral|horizontal|movement|pivot).*(access|move|jump)'
+  params: '(pass.*?the.*?hash|pth|passing|hash|credential).*(theft|reuse|dump)'
+  request_path: '/(admin|management|control|config)/.*?(user|account|credential|session)'
+
+  # 数据窃取和渗透
+  params: '(exfiltration|data.*?theft|steal|extract|download).*(bulk|mass|large)'
+  params: '(sensitive|confidential|classified|secret).*(data|info|document).*(access|download|copy)'
+  request_headers: '(X-Compression|X-Download|X-Exfiltrate):\s*(true|yes|1)'
+
+  # 持久化机制
+  params: '(persistence|backdoor|implant|malware).*(install|create|establish)'
+  params: '(registry|startup|service|scheduled).*?(task|job).*(create|modify)'
+  request_path: '/(api|admin)/.*?(persist|maintain|keep.*?alive|backdoor)'
+
+  # 命令与控制通信
+  params: '(c2|c\&c|command.*?control|beacon).*(traffic|communication|heartbeat)'
+  params: '(dns|http|https|icmp).*(tunnel|covert|channel).*(exfiltrate|command)'
+  request_headers: '(X-Command|X-Control|X-Beacon):\s*(true|active|1)'
+
+  # 反检测和反分析
+  params: '(anti.*?analysis|anti.*?debug|sandbox|vm|virtual).*(detection|evasion)'
+  params: '(debug|analysis|monitor|trace).*(disable|bypass|hide|evade)'
+  user_agent: '(Analysis|VirusTotal|Hybrid|Sandbox|VM|Virtual).*?(Bypass|Evade)'
+
+  # 地缘政治相关攻击
+  params: '(government|political|diplomatic|military).*(target|attack|espionage)'
+  params: '(country|nation|state).*?(sponsored|backed|supported).*?(attack|operation)'
+  request_headers: '(X-Country|X-Region|X-Geolocation):'
+
+  # 高级绕过技术
+  params: '(bypass|evade|circumvent).*(security|protection|detection|firewall|waf)'
+  params: '(encoding|obfuscation|encryption|packing).*(technique|method|algorithm)'
+  request_body: '(eval|exec|system|shell|cmd).*?(obfuscated|encoded|encrypted)'
+
+  # 时间和战术特征
+  params: '(off.*?hours|business.*?hours|holiday|weekend).*(attack|activity)'
+  request_headers: '(X-Timezone|X-Schedule|X-Cron):'
+  params: '(slow.*?and.*?low|stealth|covert).*(attack|movement|exfiltration)'
+
+severity: critical
+category: apt_threat
+description: |
+  检测高级持续性威胁(APT)的攻击活动，包括：
+  - APT组织特定工具和基础设施识别
+  - 供应链攻击和软件更新劫持
+  - 零日漏洞利用和未知威胁
+  - 网络横向移动和权限提升
+  - 大规模数据窃取和渗透
+  - 恶意软件持久化机制
+  - 命令与控制(C2)通信检测
+  - 反检测和反分析技术
+  - 地缘政治相关的网络攻击
+  - 高级绕过和规避技术
+  - 攻击时间和战术模式分析
+
+  威胁特征：
+  - APT工具特征和基础设施指纹
+  - 攻击链和行为模式分析
+  - 时间和地理异常检测
+  - 高级绕过和持久化技术
+cwe: "CWE-506"
+references:
+  - "https://attack.mitre.org/"
+  - "https://www.fireeye.com/current-threats/apt-groups.html"
+  - "https://www.mandiant.com/resources/apt-groups"
+attack_patterns:
+  - "供应链攻击"
+  - "零日利用"
+  - "横向移动"
+  - "数据窃取"
+  - "持久化"
+  - "命令控制"
+response_codes: [200, 201, 301, 302, 400, 401, 403, 404, 500]
+threat_level: "critical"
+impact: "可能导致长期网络渗透、数据完全泄露或关键基础设施控制"

@@ -1,0 +1,69 @@
+name: 云原生安全威胁检测
+pattern:
+  # Kubernetes API攻击
+  request_path: '/api/v1/namespaces/[^/]+/(pods|services|deployments|secrets|configmaps)'
+  request_path: '/apis/apps/v1/namespaces/[^/]+/(deployments|replicasets|daemonsets)'
+  params: '(kubectl|helm|k9s|lens|octant)'
+
+  # 容器逃逸尝试
+  params: '(docker.*?run.*?--privileged|nsenter|chroot|mount.*?/proc|/proc/1/ns|/var/run/docker\.sock)'
+
+  # 云服务元数据攻击
+  params: '(metadata\.google\.internal|169\.254\.169\.254/latest|100\.100\.100\.200/latest|metadata\.azure\.com)'
+  params: '(ec2metadata|instance-metadata|computeMetadata)'
+
+  # 容器镜像和供应链攻击
+  params: '(docker.*?pull|crictl.*?pull|containerd.*?pull|registry.*?v2|manifest.*?digest)'
+  user_agent: '(docker|containerd|cri-o|podman)'
+
+  # 服务网格和微服务威胁
+  params: '(istio\.io|envoy|linkerd|consul|sidecar|proxy|mesh)'
+  request_path: '/(api|admin|v1)/.*?/(istio|envoy|linkerd)/'
+
+  # 云配置和凭证泄露
+  params: '(\.aws/|\.kube/|\.docker/|\.azure/|\.gcp/|credentials|access_key|secret_key|service_account|kubeconfig)'
+  params: '(AKIA[0-9A-Z]{16}|sa-[0-9a-f]{32}|[0-9a-f]{64}\.serviceaccount)'
+
+  # 云存储和数据库攻击
+  params: '(s3://|gs://|azblob://|cos://|oss://|minio|etcd|consul|vault)'
+  request_path: '(/buckets/|/objects/|/keys/|/secrets/|/kv/)'
+
+  # Serverless和函数攻击
+  params: '(lambda|cloudrun|functions|faas|serverless)\s*(invoke|execute|call|trigger)'
+  request_path: '/(2015-03-31|v1)/.*?/(functions|lambda)'
+
+severity: high
+category: cloud_security
+description: |
+  检测云原生环境中的安全威胁，包括：
+  - Kubernetes API攻击和权限提升
+  - 容器逃逸和宿主机访问
+  - 云服务元数据滥用
+  - 容器镜像供应链攻击
+  - 服务网格威胁
+  - 云配置和凭证泄露
+  - 云存储攻击
+  - Serverless函数攻击
+
+  攻击场景：
+  - K8s API未授权访问
+  - 容器特权逃逸
+  - 云元数据SSRF
+  - 镜像投毒
+  - 服务代理劫持
+  - 凭证扫描
+cwe: "CWE-200"
+references:
+  - "https://attack.mitre.org/matrices/ICS/"
+  - "https://owasp.org/www-project-cloud-native-application-security-topology/"
+  - "https://kubernetes.io/docs/concepts/security/"
+attack_patterns:
+  - "云API滥用"
+  - "容器逃逸"
+  - "元数据SSRF"
+  - "供应链攻击"
+  - "凭证窃取"
+  - "服务劫持"
+response_codes: [200, 201, 401, 403, 404, 500]
+threat_level: "high"
+impact: "可能导致云基础设施控制、数据泄露或横向渗透"

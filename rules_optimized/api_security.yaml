@@ -1,0 +1,60 @@
+name: API安全缺陷检测
+pattern:
+  # GraphQL注入
+  params: '\{.*\}\{.*\}.*mutation.*\{'
+  params: '(query|mutation|subscription).*\{.*\}\{.*\}'
+  params: '(__schema|__type|__field|__introspect)'
+
+  # REST API滥用
+  params: '(admin|user|account)/\d+/(delete|remove|update)'
+  params: '(password|token|secret|key|auth).*=(true|1|admin)'
+  params: '(id|user_id)=.*\bor\b.*\b\d+\b'
+
+  # 参数污染
+  params: '(\w+)=[^&]*&\1=[^&]*'
+  params: '(\w+)\[\]=[^&]*&\1\[\]=[^&]*'
+
+  # 批量操作滥用
+  params: '\d+-\d+/|batch|bulk|multi'
+  params: '(delete|remove|update)\[.*\]'
+
+  # IDOR检测
+  params: '(user|account|order|payment|file)/\d+'
+  headers: '(Authorization|Bearer).*\d+'
+
+  # API枚举
+  path: '/(api|v1|v2|rest|graphql)/'
+  params: '(swagger|openapi|api-docs|postman)'
+
+  # 速率限制绕过
+  headers: '(X-Forwarded-For|X-Real-IP|X-Originating-IP)'
+  params: '(proxy|vpn|tor|rotate)'
+
+severity: medium
+category: api_security
+description: |
+  检测API安全缺陷和滥用，包括：
+  - GraphQL注入和枚举
+  - REST API权限绕过
+  - IDOR漏洞利用
+  - 参数污染攻击
+  - 批量操作滥用
+  - 速率限制绕过
+
+  检测场景：
+  - 越权访问用户数据
+  - 批量数据操作
+  - API文档探测
+  - 业务逻辑绕过
+cwe: "CWE-285"
+references:
+  - "https://owasp.org/www-project-api-security/"
+  - "https://cheatsheetseries.owasp.org/cheatsheets/REST_Security_Cheat_Sheet.html"
+attack_patterns:
+  - "权限绕过"
+  - "数据泄露"
+  - "业务逻辑滥用"
+  - "API枚举"
+response_codes: [200, 201, 400, 401, 403, 404]
+threat_level: "medium"
+impact: "可能导致数据泄露、权限滥用或业务逻辑绕过"

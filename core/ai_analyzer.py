@@ -3,6 +3,7 @@ import logging
 import yaml
 import time
 from typing import Dict, Any
+from .exceptions import AIServiceError, AIServiceUnavailableError, AIAuthenticationError, AIRateLimitError
 
 class AIAnalyzer:
     def __init__(self, config_path: str = 'config.yaml'):
@@ -13,8 +14,12 @@ class AIAnalyzer:
         self.logger = logging.getLogger(__name__)
         
         # 重试配置
-        self.max_retries = 3
-        self.retry_delay = 1
+        self.max_retries = self.config.get('ai', {}).get('max_retries', 3)
+        self.retry_delay = self.config.get('ai', {}).get('retry_delay', 1)
+        self.retry_backoff = self.config.get('ai', {}).get('retry_backoff', 2)
+        
+        # 超时配置
+        self.default_timeout = self.config.get('ai', {}).get('default_timeout', 30)
 
         # 加载云端模型配置
         if self.cloud_provider == 'deepseek':
@@ -46,68 +51,361 @@ class AIAnalyzer:
 
     def _make_request_with_retry(self, url: str, headers: Dict[str, str], payload: Dict[str, Any], timeout: int) -> requests.Response:
         """带重试机制的请求方法"""
+        last_exception = None
+
         for attempt in range(self.max_retries):
             try:
                 response = requests.post(url, headers=headers, json=payload, timeout=timeout)
                 response.raise_for_status()
                 return response
-            except requests.exceptions.Timeout:
-                self.logger.warning(f"请求超时 (尝试 {attempt + 1}/{self.max_retries})")
-            except requests.exceptions.ConnectionError:
-                self.logger.warning(f"连接错误 (尝试 {attempt + 1}/{self.max_retries})")
+
+            except requests.exceptions.Timeout as e:
+                last_exception = AIServiceUnavailableError(
+                    f"AI服务请求超时 (尝试 {attempt + 1}/{self.max_retries})",
+                    error_code="TIMEOUT",
+                    details={"url": url, "timeout": timeout, "attempt": attempt + 1}
+                )
+                self.logger.warning(str(last_exception))
+
+            except requests.exceptions.ConnectionError as e:
+                last_exception = AIServiceUnavailableError(
+                    f"无法连接到AI服务 (尝试 {attempt + 1}/{self.max_retries})",
+                    error_code="CONNECTION_ERROR",
+                    details={"url": url, "attempt": attempt + 1}
+                )
+                self.logger.warning(str(last_exception))
+
             except requests.exceptions.HTTPError as e:
-                self.logger.warning(f"HTTP错误: {e.response.status_code} (尝试 {attempt + 1}/{self.max_retries})")
+                status_code = e.response.status_code
+                error_details = {
+                    "status_code": status_code,
+                    "url": url,
+                    "attempt": attempt + 1,
+                    "response_text": e.response.text[:200] if hasattr(e.response, 'text') else ''
+                }
+
+                if status_code == 401:
+                    raise AIAuthenticationError(
+                        "AI服务认证失败，请检查API密钥",
+                        error_code="AUTHENTICATION_FAILED",
+                        details=error_details
+                    )
+                elif status_code == 429:
+                    last_exception = AIRateLimitError(
+                        f"AI服务请求频率限制 (尝试 {attempt + 1}/{self.max_retries})",
+                        error_code="RATE_LIMIT",
+                        details=error_details
+                    )
+                    self.logger.warning(str(last_exception))
+                elif 400 <= status_code < 500:
+                    raise AIServiceError(
+                        f"AI服务客户端错误: HTTP {status_code}",
+                        error_code="CLIENT_ERROR",
+                        details=error_details
+                    )
+                elif status_code >= 500:
+                    last_exception = AIServiceUnavailableError(
+                        f"AI服务服务器错误: HTTP {status_code} (尝试 {attempt + 1}/{self.max_retries})",
+                        error_code="SERVER_ERROR",
+                        details=error_details
+                    )
+                    self.logger.warning(str(last_exception))
+
+            except requests.exceptions.RequestException as e:
+                last_exception = AIServiceError(
+                    f"AI服务请求异常: {e} (尝试 {attempt + 1}/{self.max_retries})",
+                    error_code="REQUEST_EXCEPTION",
+                    details={"url": url, "error": str(e), "attempt": attempt + 1}
+                )
+                self.logger.warning(str(last_exception))
+
             except Exception as e:
-                self.logger.warning(f"请求失败: {e} (尝试 {attempt + 1}/{self.max_retries})")
-            
+                last_exception = AIServiceError(
+                    f"AI服务未知错误: {e} (尝试 {attempt + 1}/{self.max_retries})",
+                    error_code="UNKNOWN_ERROR",
+                    details={"url": url, "error": str(e), "attempt": attempt + 1}
+                )
+                self.logger.warning(str(last_exception))
+
+            # 如果不是最后一次尝试，等待后重试
             if attempt < self.max_retries - 1:
-                time.sleep(self.retry_delay * (2 ** attempt))  # 指数退避
-        
-        raise Exception("所有重试尝试都失败了")
+                wait_time = self.retry_delay * (2 ** attempt)  # 指数退避
+                self.logger.info(f"等待 {wait_time} 秒后重试...")
+                time.sleep(wait_time)
 
-    def analyze_log(self, log_context: str) -> str:
-        """将日志上下文发送给AI进行分析"""
-        if not log_context or not log_context.strip():
-            return "无有效日志内容可供分析"
-        
-        prompt = f"""作为网络安全应急响应专家，请深度分析以下高风险成功攻击日志。这些日志已确认为：
-1. 高风险安全威胁
-2. 攻击执行成功（HTTP状态码显示成功）
+        # 所有重试都失败了，抛出最后一个异常
+        if last_exception:
+            raise last_exception
+        else:
+            raise AIServiceUnavailableError(
+                "所有重试尝试都失败了",
+                error_code="ALL_RETRIES_FAILED"
+            )
 
-请重点分析以下方面：
-**攻击分析:**
-- 具体攻击类型和技术手段
-- 攻击载荷的危害程度和技术复杂度
-- 攻击者可能获得的权限或数据
+    def _get_attack_specific_prompt(self, log_context: str, attack_category: str = None, attack_name: str = None) -> str:
+        """根据攻击类型生成专门的AI分析提示词"""
 
-**影响评估:**
-- 系统遭受的实际损害
-- 可能被窃取或篡改的数据
-- 对业务连续性的潜在影响
+        # 通用分析框架
+        base_framework = """
+请基于以下日志内容进行深度安全分析：
 
-**应急措施:**
-- 立即需要采取的阻断措施
-- 系统加固和漏洞修复建议
-- 后续监控和检测要点
+**分析要求:**
+1. 攻击技术分析（技术手段、攻击复杂度、载荷特征）
+2. 影响范围评估（数据风险、系统损害、业务影响）
+3. 应急响应措施（立即处置、漏洞修复、后续监控）
+4. 威胁情报分析（攻击者特征、组织归属、后续威胁）
 
-**威胁情报:**
-- 攻击者的技术特征分析
-- 可能的攻击组织或工具特征
-- 后续攻击的可能性评估
-
-日志内容：
+**日志内容:**
 {log_context}
 
-请以专业、简洁的格式回复，重点关注实际威胁和应对措施："""
+**输出格式:**
+请使用结构化的Markdown格式回复，包含上述四个方面的详细分析。
+"""
+
+        # 针对不同攻击类型的专门提示词
+        specialized_prompts = {
+            'injection': f"""
+作为数据库安全专家，请重点分析以下SQL注入攻击：
+
+**重点关注:**
+- 注入类型（UNION、Boolean、Time-based、存储过程）
+- 数据库指纹识别和权限提升可能
+- 数据泄露范围和敏感信息访问
+- 数据库持久化后门风险
+
+{base_framework}
+""",
+
+            'xss': f"""
+作为Web应用安全专家，请重点分析以下XSS攻击：
+
+**重点关注:**
+- XSS类型（反射型、存储型、DOM型）
+- 会话劫持和Cookie窃取风险
+- 浏览器攻击向量（CSRF、Clickjacking配合）
+- 持久化攻击和蠕虫传播可能
+
+{base_framework}
+""",
+
+            'rce': f"""
+作为系统安全专家，请重点分析以下远程代码执行攻击：
+
+**重点关注:**
+- 代码执行上下文和权限级别
+- 系统持久化机制和后门安装
+- 横向移动和内网渗透风险
+- 数据窃取和系统控制威胁
+
+{base_framework}
+""",
+
+            'ssrf': f"""
+作为网络安全专家，请重点分析以下SSRF攻击：
+
+**重点关注:**
+- 目标服务识别（内网、云服务、元数据）
+- 信息泄露范围和敏感数据访问
+- 服务指纹识别和后续攻击可能
+- 云环境凭证窃取风险
+
+{base_framework}
+""",
+
+            'api_security': f"""
+作为API安全专家，请重点分析以下API安全威胁：
+
+**重点关注:**
+- API类型（REST、GraphQL、gRPC）和攻击面
+- 认证绕过和权限提升机制
+- 数据泄露和业务逻辑滥用
+- API滥用和拒绝服务风险
+
+{base_framework}
+""",
+
+            'cloud_security': f"""
+作为云安全专家，请重点分析以下云原生威胁：
+
+**重点关注:**
+- 云服务类型（K8s、Docker、Serverless）和攻击面
+- 容器逃逸和宿主机访问风险
+- 云配置错误和凭证泄露
+- 横向云环境渗透威胁
+
+{base_framework}
+"""
+        }
+
+        # 根据攻击类别选择专门提示词
+        if attack_category in specialized_prompts:
+            return specialized_prompts[attack_category].format(log_context=log_context)
+
+        # 如果有具体攻击名称，尝试从名称推断类型
+        if attack_name:
+            attack_name_lower = attack_name.lower()
+            if 'sql' in attack_name_lower or 'injection' in attack_name_lower:
+                return specialized_prompts['injection'].format(log_context=log_context)
+            elif 'xss' in attack_name_lower or 'script' in attack_name_lower:
+                return specialized_prompts['xss'].format(log_context=log_context)
+            elif 'rce' in attack_name_lower or 'command' in attack_name_lower or 'exec' in attack_name_lower:
+                return specialized_prompts['rce'].format(log_context=log_context)
+            elif 'ssrf' in attack_name_lower:
+                return specialized_prompts['ssrf'].format(log_context=log_context)
+            elif 'api' in attack_name_lower or 'graphql' in attack_name_lower or 'rest' in attack_name_lower:
+                return specialized_prompts['api_security'].format(log_context=log_context)
+            elif 'kubernetes' in attack_name_lower or 'docker' in attack_name_lower or 'cloud' in attack_name_lower:
+                return specialized_prompts['cloud_security'].format(log_context=log_context)
+
+        # 默认使用通用提示词
+        return base_framework.format(log_context=log_context)
+
+    @performance_monitor(name="ai_analysis", unit="s")
+    @error_rate_monitor(window_size=10)
+    def analyze_log(self, log_context: str, attack_category: str = None, attack_name: str = None, threat_score: float = None) -> str:
+        """增强的AI分析 - 支持攻击类型特定的深度分析"""
+        if not log_context or not log_context.strip():
+            return "无有效日志内容可供分析"
+
+        # 为避免过长的上下文影响性能，限制日志长度
+        if len(log_context) > 5000:
+            log_context = log_context[:5000] + "\n... (日志内容被截断) ..."
+
+        # 根据威胁评分调整分析的深度
+        urgency_level = "常规" if not threat_score or threat_score < 6.0 else "紧急"
+
+        # 生成攻击类型特定的提示词
+        prompt = self._get_attack_specific_prompt(log_context, attack_category, attack_name)
+
+        # 添加威胁评分相关信息
+        if threat_score:
+            prompt = f"**威胁评分:** {threat_score:.1f}/10.0 ({urgency_level}级别)\n\n{prompt}"
 
         try:
             if self.ai_type == 'local' and self.local_provider == 'ollama':
                 return self._analyze_with_ollama(prompt)
             else:
-                return self._analyze_with_cloud(prompt)
+                try:
+                    return self._analyze_with_cloud(prompt)
+                except Exception as e:
+                    error_msg = f"云端AI分析失败: {str(e)}"
+                    self.logger.warning(error_msg)
+                    return self._generate_fallback_analysis(attack_category, threat_score)
+
         except Exception as e:
             self.logger.error(f"AI分析失败: {e}")
-            return f"AI分析失败: {str(e)}"
+            return self._generate_fallback_analysis(attack_category, threat_score)
+
+    def _generate_fallback_analysis(self, attack_category: str, threat_score: float) -> str:
+        """生成备用分析结果（当AI不可用时）"""
+
+        fallback_templates = {
+            'injection': """
+## SQL注入攻击分析
+
+### 攻击技术分析
+检测到SQL注入攻击尝试，攻击者可能通过参数注入恶意SQL代码来：
+- 窃取数据库中的敏感信息
+- 绕过身份验证机制
+- 执行数据库管理命令
+
+### 影响评估
+- **数据风险**: 高 - 可能导致数据泄露或篡改
+- **系统风险**: 中 - 可能获得数据库管理权限
+
+### 应急措施
+1. 立即检查数据库访问日志
+2. 修复注入漏洞（参数化查询）
+3. 更改数据库凭据
+4. 监控异常数据库操作
+""",
+
+            'xss': """
+## XSS攻击分析
+
+### 攻击技术分析
+检测到跨站脚本攻击，攻击者可能试图：
+- 窃取用户会话Cookie
+- 执行恶意JavaScript代码
+- 重定向用户到钓鱼网站
+
+### 影响评估
+- **用户风险**: 高 - 可能导致会话劫持
+- **数据风险**: 中 - 可能窃取用户输入
+
+### 应急措施
+1. 检查输出编码机制
+2. 实施内容安全策略(CSP)
+3. 更新Web应用防火墙规则
+4. 通知用户修改密码
+""",
+
+            'rce': """
+## 远程代码执行攻击分析
+
+### 攻击技术分析
+检测到远程代码执行攻击，这是最高危的攻击类型：
+- 攻击者已在服务器上执行命令
+- 可能安装后门或恶意软件
+- 存在完全控制服务器的风险
+
+### 影响评估
+- **系统风险**: 严重 - 服务器可能被完全控制
+- **数据风险**: 严重 - 所有数据可能被访问或窃取
+
+### 应急措施
+1. **立即隔离受影响的服务器**
+2. 检查系统进程和网络连接
+3. 分析系统日志寻找持久化机制
+4. 重新构建受感染系统
+""",
+
+            'ssrf': """
+## SSRF攻击分析
+
+### 攻击技术分析
+检测到服务器端请求伪造攻击，攻击者可能：
+- 探测内网服务和拓扑结构
+- 访问云服务元数据
+- 绕过防火墙限制
+
+### 影响评估
+- **内网风险**: 高 - 可能探测内部服务
+- **云风险**: 中 - 可能访问云元数据
+
+### 应急措施
+1. 检查内网服务访问日志
+2. 限制服务器出站网络访问
+3. 更新云服务安全配置
+4. 监控异常网络请求
+"""
+        }
+
+        template = fallback_templates.get(attack_category, """
+## 安全威胁分析
+
+### 攻击检测
+检测到潜在的安全威胁，需要进一步调查。
+
+### 风险评估
+基于检测到的攻击模式，建议：
+- 检查相关系统日志
+- 评估数据安全风险
+- 实施临时防护措施
+
+### 应急响应
+1. 隔离受影响的服务
+2. 收集和分析日志
+3. 修复识别的漏洞
+4. 加强监控措施
+""")
+
+        # 添加威胁评分信息
+        if threat_score:
+            threat_level = "严重" if threat_score >= 8.0 else "高" if threat_score >= 6.0 else "中" if threat_score >= 4.0 else "低"
+            template = f"**威胁评分:** {threat_score:.1f}/10.0 ({threat_level}风险)\n\n{template}"
+
+        return template
 
     def _analyze_with_ollama(self, prompt: str) -> str:
         """使用本地Ollama模型进行分析"""

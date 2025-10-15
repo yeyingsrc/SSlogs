@@ -1,0 +1,48 @@
+name: GraphQL API安全检测
+pattern:
+  # GraphQL注入和查询篡改
+  request_body: '(\{\s*query.*?\}\s*\{.*?\}\s*\})|mutation.*?\{.*?\}|subscription.*?\{.*?\}'
+
+  # GraphQL Introspection查询 (信息泄露)
+  request_body: '(__schema|__type|__typename|introspection|fragment.*?\son.*?\{)'
+
+  # GraphQL拒绝服务 (DoS)
+  request_body: '(\{.*?\{.*?\{.*?\{.*?\{.*?|recursive|circular|infinite)'
+
+  # GraphQL字段枚举和敏感信息泄露
+  request_body: '(user|password|token|secret|key|credential|admin|root)\s*\{.*?(id|name|email|role)'
+
+  # GraphQL批量查询
+  request_body: '(\[.*?\{.*?\}\s*,\s*\{.*?\}\]|batch|multiple)'
+
+  # GraphQL IDOR和越权访问
+  params: '(id\s*:\s*["\']?\d+["\']?|user\s*:\s*["\']?\w+["\']?)'
+
+severity: high
+category: api_security
+description: |
+  检测GraphQL API安全威胁，包括：
+  - GraphQL注入攻击
+  - Schema内省信息泄露
+  - 拒绝服务攻击
+  - 批量查询滥用
+  - 权限绕过和IDOR
+
+  威胁特征：
+  - 复杂嵌套查询
+  - 敏感字段访问
+  - 批量操作异常
+  - 权限提升尝试
+cwe: "CWE-943"
+references:
+  - "https://owasp.org/www-project-api-security/"
+  - "https://graphql.org/learn/thinking-in-graphs/"
+attack_patterns:
+  - "GraphQL注入"
+  - "Schema枚举"
+  - "查询复杂度攻击"
+  - "批量查询DoS"
+  - "权限绕过"
+response_codes: [200, 400, 500]
+threat_level: "high"
+impact: "可能导致数据泄露、权限绕过或服务拒绝"

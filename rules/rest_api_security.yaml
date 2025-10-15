@@ -1,0 +1,72 @@
+name: REST API安全威胁检测
+pattern:
+  # API认证和授权绕过
+  request_headers: '(Authorization\s*:\s*(None|null|undefined|test|demo|fake|Bearer\s+(None|null|test|demo)))'
+  params: '(token=|key=|api_key=|auth=).*?(None|null|undefined|test|demo|fake|default|guest|anonymous)'
+
+  # API版本探测和枚举
+  request_path: '/(v1|v2|v3|api|rest|version)/.*?/(users|admin|config|settings|accounts)'
+  params: '(api_version|version)=.*?(v1|v2|v3|1\.0|2\.0)'
+
+  # API参数污染和注入
+  params: '&(user|id|email|name)=.*?(&\1=)'
+  params: '\[\](id|user|email)=.*?\[\]'  # 数组注入
+  params: '\{\}(id|user|email)=.*?\{\}'  # 对象注入
+
+  # API速率限制绕过
+  request_headers: '(X-Forwarded-For|X-Real-IP|X-Originating-IP|X-Remote-IP|X-Remote-Addr)'
+  request_headers: '(User-Agent|Referer|Origin):\s*(bot|crawler|scraper|automation)'
+
+  # API数据格式攻击
+  request_headers: '(Content-Type|Accept):\s*(application/xml|text/xml|application/json-p|text/javascript)'
+  request_body: '(<\?xml.*?\?>|<!DOCTYPE.*?>|<!ENTITY.*?>)'
+
+  # REST API IDOR和越权
+  request_path: '/(api|v1|v2|v3)/.*?/(users|accounts|orders|files|data)/[^/?]+'
+  params: '(user_id|account_id|order_id|file_id)=\d+'
+
+  # GraphQL与REST混合攻击
+  request_body: '\{.*?query.*?\}.*?(/api|/rest|/v1|/v2)'
+  params: '(graphql|gql).*(endpoint|url|path)'
+
+  # API错误和调试信息泄露
+  response_content: '(error|exception|stack.*?trace|debug|sql|mysql|postgresql|mongodb)'
+  response_content: '(internal server error|500|database|connection|timeout)'
+
+  # OpenAPI/Swagger探测
+  request_path: '/(swagger|api-docs|openapi|docs|api-doc)\.json'
+  request_path: '/(swagger|redoc|rapidoc|api|docs)\.(html|yaml|yml)'
+
+severity: medium
+category: api_security
+description: |
+  检测REST API安全威胁，包括：
+  - 认证和授权绕过
+  - API版本枚举
+  - 参数污染攻击
+  - 速率限制绕过
+  - 数据格式攻击
+  - IDOR和越权访问
+  - 错误信息泄露
+  - API文档探测
+
+  威胁特征：
+  - 认证头篡改
+  - 参数重复和污染
+  - 版本路径遍历
+  - 错误信息扫描
+  - API文档探测
+cwe: "CWE-287"
+references:
+  - "https://owasp.org/www-project-api-security/"
+  - "https://owasp.org/www-project-top-ten/2017/A3_2017-Sensitive_Data_Exposure"
+attack_patterns:
+  - "认证绕过"
+  - "参数污染"
+  - "IDOR攻击"
+  - "权限提升"
+  - "信息泄露"
+  - "API枚举"
+response_codes: [200, 201, 400, 401, 403, 404, 500]
+threat_level: "medium"
+impact: "可能导致数据泄露、权限绕过或API滥用"
