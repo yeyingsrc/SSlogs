@@ -1,0 +1,117 @@
+name: AI/ML驱动的异常行为检测
+pattern:
+  # 用户行为异常检测
+  user_agent:
+    # 异常User-Agent模式
+    '(bot|crawler|scraper|python|curl|wget).*?(?!googlebot|bingbot|slurp)'
+    '(Mozilla/5\.0).*?\(Windows NT 10\.0; Win64; x64\).*?(Chrome/\d+\.0\.0|Safari/\d+)'
+    '(Mozilla/4\.0|Mozilla/3\.0|Opera/9\.80).*?(compatible|MSIE)'
+
+  # 请求频率异常
+  request_path:
+    # 高频访问模式
+    '(/\w+){10,}'  # 超长路径
+    '(\?|&)(\w+=\w+){20,}'  # 超多参数
+
+  # 时间模式异常
+  request_headers:
+    # 非正常工作时间访问
+    '(X-Time|X-Local-Time):\s*([0-2]\d:[0-5]\d:(00-59|59))'
+    # 异常时区
+    '(X-Timezone|X-Zone):\s*(UTC\+14|UTC\-12|[A-Z]{3,4})'
+
+  # 会话行为异常
+  params:
+    # 会话跳跃异常
+    '(session|token|jwt).*(change|switch|jump|hop)'
+    # 设备指纹异常
+    '(fingerprint|device|hwid).*(change|modify|spoof|fake)'
+
+  # 访问模式异常
+  request_body:
+    # 批量数据访问
+    '{"(bulk|batch|multi|all|entire)":\s*(true|1|"yes")}'
+    '{"(limit|offset|size)":\s*(\d{4,}|9999|99999)}'
+    # 异常操作序列
+    '{"(action|operation)":\s*"(delete|remove|drop|truncate)".*"(confirm|bypass|force)":\s*"(true|1|yes)"}'
+
+  # 智能模式识别
+  combined_patterns:
+    # 机器学习检测标记
+    'ml_score:\s*(0\.\d{2,}|[9]\.\d+|risk|anomaly|suspicious)'
+    'ai_prediction:\s*(attack|malicious|abnormal|outlier)'
+    'behavior_baseline:\s*(deviated|violated|exceeded|breached)'
+
+  # 统计异常检测
+  response_codes:
+    # 异常状态码分布
+    '(\d{3,}|[5-9]\d{2}|[1-4]\d{3})'  # 非标准状态码
+
+  # 数据量异常
+  processing_time:
+    # 异常处理时间
+    '(\d{4,}|[1-9]\d{3}\.\d+)'  # 超长处理时间可能表示攻击
+
+severity: medium
+category: ai_ml_anomaly
+description: |
+  基于人工智能和机器学习的异常行为检测规则，识别：
+
+  **行为异常检测**：
+  - 用户行为模式偏离基线
+  - 访问频率和时间异常
+  - 会话和设备指纹异常
+  - 操作序列异常检测
+
+  **统计异常识别**：
+  - 请求参数异常分布
+  - 响应时间异常模式
+  - 状态码异常分布
+  - 数据传输量异常
+
+  **智能威胁检测**：
+  - 机器学习风险评分
+  - AI预测的恶意行为
+  - 行为基线偏离检测
+  - 异常模式聚类分析
+
+  **技术特点**：
+  - 基于历史数据的行为基线
+  - 实时异常检测和评分
+  - 自适应阈值调整
+  - 多维度行为关联分析
+
+cwe: "CWE-754"
+references:
+  - "https://owasp.org/www-project-machine-learning-security-top-10/"
+  - "https://github.com/owasp/owasp-masvs"
+  - "https://ieeexplore.ieee.org/document/8932838"
+attack_patterns:
+  - "行为异常攻击"
+  - "绕过行为检测"
+  - "异常模式伪装"
+  - "基线偏离攻击"
+response_codes: [200, 201, 400, 401, 403, 404, 429, 500, 502, 503]
+threat_level: "medium"
+impact: "可能表示恶意行为、自动化攻击或系统异常，需要进一步调查"
+
+# AI/ML检测配置
+ml_config:
+  enable_behavioral_analysis: true
+  anomaly_threshold: 0.7
+  baseline_window_days: 30
+  update_frequency: "daily"
+
+# 检测维度
+detection_dimensions:
+  - user_behavior
+  - access_patterns
+  - time_analysis
+  - session_analysis
+  - statistical_anomaly
+
+# 自适应参数
+adaptive_thresholds:
+  min_samples: 100
+  confidence_level: 0.95
+  false_positive_rate: 0.05

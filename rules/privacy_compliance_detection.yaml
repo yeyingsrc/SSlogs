@@ -1,0 +1,218 @@
+name: 隐私合规性检测规则
+pattern:
+  # GDPR数据访问违规
+  request_path:
+    # GDPR相关数据访问
+    '/(api|service)/.*?(personal|data|privacy|gdpr).*(access|export|download|view)'
+    '/(user|customer|profile)/.*?(personal|sensitive|private).*(data|info|details)'
+
+  params:
+    # GDPR数据违规访问
+    '(personal|private|sensitive).*(data|information|details).*(unauthorized|illegal|bypass)'
+    '(gdpr|privacy|consent).*(violation|bypass|ignore|disable)'
+    '(data|info).*(subject|access|request).*(reject|deny|ignore)'
+
+  # 个人身份信息(PII)泄露
+  request_body:
+    # PII数据泄露
+    '{"(ssn|social_security|national_id)":\s*"[0-9]{9,}"'
+    '{"(credit_card|cc|card_number)":\s*"[0-9]{15,16}"'
+    '{"(phone|mobile|telephone)":\s*"[+]*[0-9]{10,}"'
+    '{"(email|email_address)":\s*"[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}"'
+
+  # 健康信息(HIPAA)违规
+  request_path:
+    # 医疗数据访问
+    '/(medical|health|hospital|clinic)/.*?(records|data|info|history)'
+    '/(patient|doctor|nurse|medical)/.*?(personal|sensitive|private)'
+
+  params:
+    # HIPAA违规
+    '(hipaa|phi|protected.*health).*(violation|breach|expose|leak)'
+    '(medical|health|patient).*(record|data|info).*(unauthorized|illegal)'
+
+  # 同意管理违规
+  request_headers:
+    # 同意管理异常
+    '(X-Consent|X-Agreement|X-Permission):\s*(bypass|override|skip|none)'
+    '(X-Privacy|X-GDPR|X-Data-Protection):\s*(ignore|disable|violate)'
+
+  params:
+    # 同意绕过
+    '(consent|agreement|permission).*(bypass|override|skip|auto)'
+    '(opt.*out|opt.*in|unsubscribe).*(block|ignore|disable)'
+
+  # 数据最小化原则违规
+  request_body:
+    # 过度数据收集
+    '{"(collect|gather|store).*(all|entire|complete|every)"}'
+    '{"(data|info|details)":\s*"(excessive|unnecessary|extra|additional)"}'
+
+  # 数据处理目的限制违规
+  params:
+    # 数据用途违规
+    '(purpose|use|process).*(unauthorized|illegal|inappropriate)'
+    '(data|info).*(processing|handling|use).*(violation|breach)'
+
+  # 数据保留期限违规
+  request_path:
+    # 数据保留违规
+    '/(archive|backup|storage)/.*?(data|info|records).*(indefinite|permanent|unlimited)'
+    '/(delete|remove|cleanup)/.*?(data|info).*(fail|error|skip|ignore)'
+
+  # 跨境数据传输违规
+  request_headers:
+    # 地理位置数据传输
+    '(X-Country|X-Region|X-GeoIP):\s*(CN|RU|IR|KP|AF|PK|BD)'
+    '(X-Data-Transfer|X-Cross-Border):\s*(prohibited|restricted|unauthorized)'
+
+  # 儿童隐私保护违规(COPPA)
+  request_path:
+    # 儿童数据违规
+    '/(children|kids|minor|under.*age)/.*?(data|info|profile|account)'
+    '/(parent|guardian|family).*(consent|permission|approval).*(bypass|skip)'
+
+  params:
+    # COPPA违规
+    '(coppa|children.*privacy|under.*age|minor).*(violation|breach|ignore)'
+    '(parental|guardian).*(consent|approval).*(bypass|override|fake)'
+
+  # 数据主体权利违规
+  request_path:
+    # 数据主体权利违规
+    '/(data.*subject|user.*right|privacy.*right).*(access|rectify|erase|port).*(deny|reject|block)'
+    '/(right.*to.*be.*forgotten|right.*to.*access|right.*to.*rectify).*(violation|ignore)'
+
+  # 隐私政策和通知违规
+  request_path:
+    # 隐私政策违规
+    '/(privacy|policy|notice|disclosure).*(hide|conceal|mislead|false)'
+    '/(terms|conditions|agreement).*(privacy|data|consent).*(violation|breach)'
+
+  # 数据处理记录违规
+  request_headers:
+    # 处理记录缺失
+    '(X-Audit|X-Log|X-Record):\s*(missing|absent|none|disabled)'
+    '(X-Processing|X-Handling|X-Activity):\s*(unrecorded|unlogged|hidden)'
+
+  # 加密和数据安全违规
+  params:
+    # 数据安全违规
+    '(encrypt|decrypt|secure).*(bypass|disable|weak|broken)'
+    '(password|key|secret).*(plain|clear|unencrypted|exposed)'
+
+  # 第三方数据共享违规
+  request_path:
+    # 第三方共享违规
+    '/(share|sell|transfer|disclose).*(data|info|personal).*(third.*party|external|unauthorized)'
+    '/(partner|vendor|third.*party).*(data|info|access).*(illegal|unauthorized)'
+
+  # 数据泄露和事件通知违规
+  request_body:
+    # 数据泄露通知违规
+    '{"(breach|leak|incident).*(notification|report|disclose).*(delay|hide|ignore|fail)"}'
+    '{"(data.*breach|security.*incident).*(response|handling).*(inadequate|improper|illegal)"}'
+
+severity: high
+category: privacy_compliance
+description: |
+  隐私合规性检测规则，监控GDPR、HIPAA、COPPA等隐私法规违规：
+
+  **GDPR合规检测**：
+  - 个人数据访问违规监控
+  - 数据主体权利侵犯检测
+  - 数据处理目的限制验证
+  - 跨境数据传输违规识别
+
+  **个人身份信息(PII)保护**：
+  - PII数据泄露检测
+  - 敏感信息暴露识别
+  - 数据最小化原则验证
+  - 数据保留期限合规检查
+
+  **HIPAA医疗信息保护**：
+  - 受保护健康信息(PHI)访问违规
+  - 医疗数据处理异常检测
+  - 患者隐私权侵犯识别
+  - 医疗数据传输安全验证
+
+  **同意管理合规**：
+  - 同意获取和记录违规
+  - 同意撤回处理异常
+  - 自动同意生成检测
+  - 同意管理绕过识别
+
+  **儿童隐私保护(COPPA)**：
+  - 儿童数据收集违规
+  - 家长同意验证异常
+  - 儿童隐私政策违规
+  - 年龄验证绕过检测
+
+  **数据安全和加密**：
+  - 数据加密缺失检测
+  - 安全措施不足识别
+  - 密钥管理违规
+  - 数据传输安全验证
+
+  **隐私政策和通知**：
+  - 隐私政策违规披露
+  - 数据处理通知缺失
+  - 政策更新通知违规
+  - 透明度原则违反
+
+  **数据泄露响应**：
+  - 数据泄露通知延迟
+  - 事件响应不当处理
+  - 监管报告违规
+  - 影响评估缺失
+
+cwe: "CWE-200"
+references:
+  - "https://gdpr-info.eu/"
+  - "https://www.hhs.gov/hipaa/index.html"
+  - "https://www.ftc.gov/enforcement/rules/rulemaking-regulatory-reform-proceedings/childrens-online-privacy-protection-rule"
+  - "https://ico.org.uk/for-organisations/guide-to-data-protection/"
+attack_patterns:
+  - "隐私数据泄露"
+  - "同意管理绕过"
+  - "数据主体权利侵犯"
+  - "跨境数据传输违规"
+response_codes: [200, 201, 400, 401, 403, 404, 500, 503]
+threat_level: "high"
+impact: "可能导致监管罚款、法律诉讼、声誉损害和用户信任损失"
+
+# 隐私合规配置
+privacy_config:
+  gdpr_compliance: true
+  hipaa_compliance: true
+  coppa_compliance: true
+  ccpa_compliance: true
+
+# 数据分类配置
+data_classification:
+  personal_data: true
+  sensitive_personal_data: true
+  health_information: true
+  financial_information: true
+  children_data: true
+
+# 同意管理配置
+consent_management:
+  explicit_consent: true
+  consent_logging: true
+  consent_withdrawal: true
+  age_verification: true
+
+# 数据保护配置
+data_protection:
+  encryption_required: true
+  access_control: true
+  audit_logging: true
+  data_minimization: true
+
+# 地理合规配置
+geographic_compliance:
+  cross_border_transfer: true
+  data_localization: true
+  regional_restrictions: true
+  jurisdiction_compliance: true

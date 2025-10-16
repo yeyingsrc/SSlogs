@@ -1,0 +1,234 @@
+name: 金融行业安全威胁检测
+pattern:
+  # 支付系统攻击
+  request_path:
+    # 支付端点攻击
+    '/(api|service)/.*?(payment|pay|checkout|transaction|settlement)'
+    '/(payment|gateway|processor|merchant)/.*?(authorize|capture|refund|void)'
+
+  params:
+    # 支付欺诈模式
+    '(amount|total|price|cost).*(negative|zero|0\.0|0\.01|-|%20|%2D)'
+    '(payment|transaction).*(bypass|override|skip|hack|crack|exploit)'
+    '(card|credit|debit).*(number|cvv|cvc|exp|expiry).*(test|fake|sample)'
+
+  # 信用卡和银行账户攻击
+  request_body:
+    # 敏感金融数据
+    '{"(card_number|credit_card|account_number)":\s*"[0-9]{15,19}"'
+    '{"(cvv|cvc|security_code|pin)":\s*"[0-9]{3,4}"'
+    '{"(routing_number|swift_code|iban)":\s*"[A-Z0-9]{8,34}"'
+    '{"(ssn|tax_id|social_security)":\s*"[0-9]{9}"'
+
+  # 洗钱和金融欺诈
+  request_path:
+    # 洗钱模式
+    '/(api|service)/.*?(transfer|wire|remittance|exchange).*(suspicious|unusual)'
+    '/(compliance|aml|kyc|audit).*(bypass|override|skip|ignore)'
+
+  params:
+    # AML/KYC违规
+    '(aml|anti.*money.*laundering).*(violation|bypass|ignore|disable)'
+    '(kyc|know.*your.*customer).*(bypass|skip|override|fake|forged)'
+    '(transaction|transfer).*(structuring|smurfing|layering|integration)'
+
+  # 股票和交易攻击
+  request_path:
+    # 交易系统攻击
+    '/(api|trade|market|stock|forex|crypto)/.*?(execute|place|cancel|modify)'
+    '/(portfolio|account|wallet).*(balance|position|holding).*(manipulate|alter)'
+
+  params:
+    # 市场操纵
+    '(trade|order|transaction).*(spoofing|layering|front.*running|wash.*trading)'
+    '(price|rate|quote).*(manipulate|artificial|inflate|deflate)'
+    '(insider|material|non.*public).*(information|data|tip).*(use|leak|trade)'
+
+  # 网络钓鱼和身份盗用
+  request_headers:
+    # 钓鱼特征
+    '(X-Phishing|X-Fraud|X-Scam):\s*(detected|suspicious|malicious)'
+    '(Referer|Origin):\s*(phishing|fake|spoof|malicious).*\.(com|net|org)'
+
+  request_path:
+    # 钓鱼页面
+    '/(login|signin|account|bank|secure).*(verify|confirm|update|security)'
+    '/(suspicious|phishing|fake|scam).*(page|site|login)'
+
+  # ATM和POS攻击
+  params:
+    # ATM/POS欺诈
+    '(atm|pos|terminal).*(skimming|shimming|malware|backdoor)'
+    '(pin|password|secret).*(capture|harvest|steal|log)'
+    '(magstripe|chip|nfc).*(cloning|copying|intercept)'
+
+  # 加密货币攻击
+  request_path:
+    # 加密货币威胁
+    '/(api|wallet|exchange|blockchain)/.*?(bitcoin|ethereum|crypto|token)'
+    '/(wallet|address|private.*key).*(drain|steal|hack|exploit)'
+
+  params:
+    # 加密货币攻击模式
+    '(bitcoin|btc|ethereum|eth|usdt).*(double.*spend|51.*%|attack|exploit)'
+    '(private.*key|seed|phrase|mnemonic).*(expose|leak|steal|share)'
+    '(smart.*contract|defi|yield.*farm).*(exploit|drain|hack|vulnerability)'
+
+  # 保险欺诈
+  request_path:
+    # 保险欺诈模式
+    '/(insurance|claim|policy|coverage)/.*?(fraud|false|fake|exaggerated)'
+    '/(medical|health|auto|home|life).*(insurance|claim).*(suspicious|fraudulent)'
+
+  params:
+    # 保险欺诈特征
+    '(claim|policy|coverage).*(fraud|false|fake|forged|exaggerated)'
+    '(medical|health).*(bill|invoice|treatment).*(inflated|unnecessary|fake)'
+
+  # 合规性违规
+  request_headers:
+    # 合规检查异常
+    '(X-Compliance|X-Audit|X-Regulatory):\s*(fail|violation|bypass|override)'
+
+  params:
+    # 金融监管违规
+    '(pci|dss|sox|finra|sec).*(compliance|violation|bypass|ignore)'
+    '(regulation|compliance|audit).*(fail|skip|override|disable)'
+
+  # 金融数据泄露
+  request_body:
+    # 敏感金融数据暴露
+    '{"(customer|client|account).*(data|information|details)":\s*"(exposed|leaked|public)"}'
+    '{"(financial|money|payment).*(records|data|history)":\s*"(accessible|public|unprotected)"}'
+
+  # 高频交易攻击
+  params:
+    # 高频交易滥用
+    '(hft|high.*frequency|algorithmic|program).*(trading|abuse|manipulation)'
+    '(latency|arbitrage|co.*location).*(exploit|advantage|abuse)'
+
+  # 贷款和信用攻击
+  request_path:
+    # 信贷欺诈
+    '/(loan|credit|mortgage|lending)/.*?(fraud|false|misrepresentation)'
+    '/(application|approval|underwriting).*(bypass|override|manipulate)'
+
+  params:
+    # 信贷欺诈模式
+    '(loan|credit|mortgage).*(application|approval).*(fraud|false|forged)'
+    '(income|employment|asset).*(misrepresentation|falsification|exaggeration)'
+
+  # 金融API攻击
+  request_path:
+    # 金融API滥用
+    '/(api|webhook|service).*(banking|payment|financial|transaction)'
+    '/(open.*banking|plaid|stripe|paypal).*(abuse|exploit|attack)'
+
+  # 移动银行攻击
+  user_agent:
+    # 移动银行异常
+    '(mobile|banking|finance|payment).*(app|client|sdk).*(rooted|jailbroken|compromised)'
+    '(android|ios).*(banking|finance).*(malware|trojan|backdoor)'
+
+severity: critical
+category: financial_security
+description: |
+  金融行业安全威胁检测规则，专门针对金融服务和支付系统：
+
+  **支付系统安全**：
+  - 支付端点攻击检测
+  - 交易欺诈模式识别
+  - 支付绕过尝试监控
+  - 货币价值篡改检测
+
+  **信用卡和银行账户保护**：
+  - 敏感卡信息泄露检测
+  - 银行账户访问异常
+  - 交易授权绕过识别
+  - 金融数据暴露监控
+
+  **反洗钱(AML)合规**：
+  - 洗钱模式检测
+  - 可疑交易识别
+  - 资金结构化监控
+  - KYC流程绕过检测
+
+  **证券和交易安全**：
+  - 市场操纵行为检测
+  - 内幕交易识别
+  - 高频交易滥用监控
+  - 投资组合异常访问
+
+  **加密货币安全**：
+  - 数字货币攻击检测
+  - 智能合约漏洞利用
+  - 钱包安全威胁识别
+  - 区块链攻击模式分析
+
+  **保险欺诈检测**：
+  - 保险索赔欺诈识别
+  - 虚假保单检测
+  - 医疗费用欺诈监控
+  - 财产保险滥用检测
+
+  **合规性监控**：
+  - PCI DSS合规检查
+  - SOX法案合规验证
+  - 金融监管违规识别
+  - 审计流程异常检测
+
+  **移动银行安全**：
+  - 移动应用攻击检测
+  - 设备完整性验证
+  - 移动交易异常监控
+  - 生物识别安全检查
+
+cwe: "CWE-209"
+references:
+  - "https://www.pcisecuritystandards.org/"
+  - "https://www.fincen.gov/resources/statutes-regulations/bank-secrecy-act"
+  - "https://www.sec.gov/"
+  - "https://www.ffiec.gov/"
+attack_patterns:
+  - "支付系统攻击"
+  - "金融数据泄露"
+  - "洗钱活动"
+  - "市场操纵"
+response_codes: [200, 201, 301, 302, 400, 401, 403, 404, 500, 502, 503]
+threat_level: "critical"
+impact: "可能导致直接财务损失、监管处罚、声誉损害和客户信任危机"
+
+# 金融安全配置
+financial_config:
+  payment_security: true
+  fraud_detection: true
+  compliance_monitoring: true
+  data_protection: true
+
+# 支付安全配置
+payment_config:
+  pci_dss_compliance: true
+  transaction_monitoring: true
+  fraud_detection_rules: true
+  chargeback_protection: true
+
+# 反洗钱配置
+aml_config:
+  transaction_monitoring: true
+  suspicious_activity_reporting: true
+  customer_due_diligence: true
+  san_list_screening: true
+
+# 合规性配置
+compliance_config:
+  regulatory_monitoring: true
+  audit_logging: true
+  reporting_automation: true
+  policy_enforcement: true
+
+# 风险管理配置
+risk_management:
+  real_time_risk_assessment: true
+  anomaly_detection: true
+  behavioral_analysis: true
+  adaptive_scoring: true

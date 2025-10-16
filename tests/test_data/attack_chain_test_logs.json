@@ -1,0 +1,35 @@
+[
+  {
+    "timestamp": "2024-01-15T17:00:00+08:00",
+    "src_ip": "192.168.1.200",
+    "request_method": "POST",
+    "request_path": "/api/phishing/login",
+    "http_version": "HTTP/1.1",
+    "status_code": "200",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)",
+    "request_headers": {
+      "X-Attack-Stage": "initial_access",
+      "X-Mitre-Tactic": "TA0001"
+    }
+  },
+  {
+    "timestamp": "2024-01-15T17:05:00+08:00",
+    "src_ip": "192.168.1.200",
+    "request_method": "POST",
+    "request_path": "/api/execute/payload",
+    "http_version": "HTTP/1.1",
+    "status_code": "200",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)",
+    "request_body": "{\"execute\": \"malicious_payload\", \"command\": \"eval\"}"
+  },
+  {
+    "timestamp": "2024-01-15T17:10:00+08:00",
+    "src_ip": "192.168.1.200",
+    "request_method": "POST",
+    "request_path": "/api/lateral/movement",
+    "http_version": "HTTP/1.1",
+    "status_code": "200",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)",
+    "request_body": "{\"lateral\": \"movement\", \"pass_the_hash\": \"true\"}"
+  }
+]

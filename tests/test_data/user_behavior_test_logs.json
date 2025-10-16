@@ -1,0 +1,35 @@
+[
+  {
+    "timestamp": "2024-01-15T03:00:00+08:00",
+    "src_ip": "192.168.1.190",
+    "request_method": "GET",
+    "request_path": "/api/sensitive_data",
+    "http_version": "HTTP/1.1",
+    "status_code": "200",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)",
+    "request_headers": {
+      "X-Time": "03:00:00",
+      "X-Access-Time": "abnormal"
+    }
+  },
+  {
+    "timestamp": "2024-01-15T10:00:00+08:00",
+    "src_ip": "192.168.1.191",
+    "request_method": "GET",
+    "request_path": "/api/users/export?all=true",
+    "http_version": "HTTP/1.1",
+    "status_code": "200",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)",
+    "request_body": "{\"export\": \"bulk\", \"data\": \"all_users\"}"
+  },
+  {
+    "timestamp": "2024-01-15T10:05:00+08:00",
+    "src_ip": "203.0.113.1",
+    "request_method": "POST",
+    "request_path": "/api/session/hijack",
+    "http_version": "HTTP/1.1",
+    "status_code": "200",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)",
+    "request_body": "{\"session\": \"hijack\", \"token\": \"stolen\"}"
+  }
+]

@@ -16,8 +16,6 @@ class ReportGenerator:
         self.templates_dir.mkdir(exist_ok=True)
         self._stats_cache = {}
 
-    @performance_monitor(name="report_generation", track_memory=True)
-    @error_rate_monitor(window_size=5)
     def generate_report(self, matched_logs: List[Dict[str, Any]], ai_results: List[str],
                        report_type: str = "html", internal_ips: Optional[Dict[str, int]] = None,
                        external_ip_details: Optional[List[Dict[str, Any]]] = None,

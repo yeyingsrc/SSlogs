@@ -1,0 +1,73 @@
+[
+  {
+    "timestamp": "2024-01-15T10:30:00+08:00",
+    "src_ip": "192.168.1.100",
+    "request_method": "GET",
+    "request_path": "/api/users",
+    "http_version": "HTTP/1.1",
+    "status_code": "200",
+    "user_agent": "Mozilla/5.0 (compatible; bot/1.0; +http://example.com/bot)",
+    "processing_time": "1.234"
+  },
+  {
+    "timestamp": "2024-01-15T10:30:00+08:00",
+    "src_ip": "192.168.1.101",
+    "request_method": "GET",
+    "request_path": "/api/data?param1=value1&param2=value2&param3=value3&param4=value4&param5=value5",
+    "http_version": "HTTP/1.1",
+    "status_code": "200",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
+    "processing_time": "2.567"
+  },
+  {
+    "timestamp": "2024-01-15T10:30:01+08:00",
+    "src_ip": "192.168.1.101",
+    "request_method": "GET",
+    "request_path": "/api/data?param1=value1&param2=value2&param3=value3&param4=value4&param5=value5",
+    "http_version": "HTTP/1.1",
+    "status_code": "200",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
+    "processing_time": "2.567"
+  },
+  {
+    "timestamp": "2024-01-15T10:30:02+08:00",
+    "src_ip": "192.168.1.101",
+    "request_method": "GET",
+    "request_path": "/api/data?param1=value1&param2=value2&param3=value3&param4=value4&param5=value5",
+    "http_version": "HTTP/1.1",
+    "status_code": "200",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
+    "processing_time": "2.567"
+  },
+  {
+    "timestamp": "2024-01-15T10:30:03+08:00",
+    "src_ip": "192.168.1.101",
+    "request_method": "GET",
+    "request_path": "/api/data?param1=value1&param2=value2&param3=value3&param4=value4&param5=value5",
+    "http_version": "HTTP/1.1",
+    "status_code": "200",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
+    "processing_time": "2.567"
+  },
+  {
+    "timestamp": "2024-01-15T10:30:04+08:00",
+    "src_ip": "192.168.1.101",
+    "request_method": "GET",
+    "request_path": "/api/data?param1=value1&param2=value2&param3=value3&param4=value4&param5=value5",
+    "http_version": "HTTP/1.1",
+    "status_code": "200",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
+    "processing_time": "2.567"
+  },
+  {
+    "timestamp": "2024-01-15T10:35:00+08:00",
+    "src_ip": "192.168.1.102",
+    "request_method": "POST",
+    "request_path": "/api/session/change",
+    "http_version": "HTTP/1.1",
+    "status_code": "200",
+    "user_agent": "curl/7.68.0",
+    "request_body": "{\"session_token\": \"abc123\", \"device_fingerprint\": \"changed\"}",
+    "processing_time": "0.876"
+  }
+]

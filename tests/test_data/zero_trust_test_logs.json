@@ -1,0 +1,44 @@
+[
+  {
+    "timestamp": "2024-01-15T12:00:00+08:00",
+    "src_ip": "192.168.1.150",
+    "request_method": "POST",
+    "request_path": "/api/login/bypass",
+    "http_version": "HTTP/1.1",
+    "status_code": "401",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)",
+    "request_headers": {
+      "X-Auth-Bypass": "true",
+      "X-MFA-Skip": "true",
+      "X-Identity-Bypass": "authentication"
+    }
+  },
+  {
+    "timestamp": "2024-01-15T12:05:00+08:00",
+    "src_ip": "192.168.1.151",
+    "request_method": "POST",
+    "request_path": "/api/privilege/escalate",
+    "http_version": "HTTP/1.1",
+    "status_code": "403",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)",
+    "request_body": "{\"privilege_escalation\": \"bypass\", \"role_upgrade\": \"admin\", \"access_control\": \"override\"}",
+    "request_headers": {
+      "X-Privilege-Escalation": "attempt",
+      "X-Access-Control": "bypass"
+    }
+  },
+  {
+    "timestamp": "2024-01-15T12:10:00+08:00",
+    "src_ip": "203.0.113.1",
+    "request_method": "GET",
+    "request_path": "/api/session/hijack",
+    "http_version": "HTTP/1.1",
+    "status_code": "200",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)",
+    "request_headers": {
+      "X-Session-Hijack": "true",
+      "X-Auth-Token": "stolen_token",
+      "X-Unauthorized-Access": "sensitive_data"
+    }
+  }
+]

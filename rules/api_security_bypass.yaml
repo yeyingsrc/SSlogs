@@ -1,0 +1,66 @@
+name: API安全绕过检测
+pattern:
+  # API认证绕过
+  request_headers: '(Authorization|Bearer|Token|API-Key):\s*(null|undefined|none|guest|anonymous|test|demo|skip|bypass)'
+
+  # API版本绕过
+  request_path: '/api/v[0-9]+/.*?(bypass|override|skip|admin|debug|test)'
+
+  # API参数污染
+  params: '(id|user_id|role|admin|privilege)=.*?(bypass|override|admin|root|1|true|yes)'
+
+  # API速率限制绕过
+  request_headers: '(X-RateLimit|X-Rate-Limit|Rate-Limit):.*?(disable|bypass|unlimited|infinity)'
+
+  # JSON格式绕过
+  request_body: '{.*?"(authenticated|authorized|admin|role)":\s*(true|1|admin|root).*?}'
+
+  # GraphQL查询绕过
+  request_body: '(mutation|query).*?\{\s*(__schema|__type|admin|user).*?\}'
+
+  # JWT令牌伪造
+  request_headers: '(Authorization|Bearer):\s*eyJ[A-Za-z0-9+/=]*\.'
+
+  # API密钥泄露
+  params: '(api_key|apikey|secret|token)=([A-Za-z0-9]{20,}|sk-[A-Za-z0-9]{20,})'
+
+  # 端点枚举
+  request_path: '/(api|v1|v2|graphql|rest|swagger|docs)/.*(admin|users|config|internal|private)'
+
+  # 方法绕过
+  request_method: '(TRACE|CONNECT|OPTIONS|PATCH)'
+
+  # 协议降级攻击
+  request_headers: '(X-Forwarded-Proto|X-Real-Proto):\s*(http|ftp)'
+
+  # 内容类型绕过
+  request_headers: '(Content-Type|Accept):\s*(application/json|text/xml|text/plain).*(charset=utf-8|charset=iso-8859-1)'
+
+severity: high
+category: api_security
+description: |
+  检测API安全绕过攻击，包括：
+  - 认证和授权绕过
+  - API版本和安全机制绕过
+  - 参数污染和权限提升
+  - 速率限制绕过
+  - JSON和GraphQL查询操作
+  - JWT令牌伪造和篡改
+  - API密钥泄露和滥用
+  - 端点枚举和发现
+  - HTTP方法和协议绕过
+
+cwe: "CWE-287"
+references:
+  - "https://owasp.org/www-project-api-security/"
+  - "https://owasp.org/www-project-top-ten/2017/A2_2017-Broken_Authentication"
+  - "https://tools.ietf.org/html/rfc7519"
+attack_patterns:
+  - "认证绕过"
+  - "权限提升"
+  - "API滥用"
+  - "令牌伪造"
+  - "端点枚举"
+response_codes: [200, 201, 401, 403, 404, 500]
+threat_level: "high"
+impact: "可能导致未授权访问、数据泄露或API滥用"

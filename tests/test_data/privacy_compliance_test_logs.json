@@ -1,0 +1,34 @@
+[
+  {
+    "timestamp": "2024-01-15T15:00:00+08:00",
+    "src_ip": "192.168.1.170",
+    "request_method": "GET",
+    "request_path": "/api/personal_data/export",
+    "http_version": "HTTP/1.1",
+    "status_code": "200",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)",
+    "request_body": "{\"personal_data\": \"unauthorized_access\", \"gdpr\": \"violation\"}"
+  },
+  {
+    "timestamp": "2024-01-15T15:05:00+08:00",
+    "src_ip": "192.168.1.171",
+    "request_method": "POST",
+    "request_path": "/api/user/profile",
+    "http_version": "HTTP/1.1",
+    "status_code": "200",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)",
+    "request_body": "{\"ssn\": \"123-45-6789\", \"credit_card\": \"4111-1111-1111-1111\"}"
+  },
+  {
+    "timestamp": "2024-01-15T15:10:00+08:00",
+    "src_ip": "192.168.1.172",
+    "request_method": "POST",
+    "request_path": "/api/consent/bypass",
+    "http_version": "HTTP/1.1",
+    "status_code": "200",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)",
+    "request_headers": {
+      "X-Consent": "bypass"
+    }
+  }
+]

@@ -1,0 +1,202 @@
+name: 云原生高级威胁检测
+pattern:
+  # Kubernetes RBAC权限提升
+  request_path:
+    # RBAC异常操作
+    '/(api/v1|apis/rbac\.authorization\.k8s\.io)/.*?(clusterroles|roles|clusterrolebindings|rolebindings)'
+    '/(apis/apps/v1|apis/extensions/v1beta1)/.*?(deployments|daemonsets|statefulsets).*(privilege|escalate)'
+
+  params:
+    # 权限提升尝试
+    '(cluster-admin|system:|kube-system).*(create|update|patch|grant)'
+    '(privilege|escalate|impersonate).*(user|serviceaccount|group)'
+
+  # Kubernetes API服务器攻击
+  request_headers:
+    # API认证异常
+    '(Authorization):\s*(Bearer\s+[A-Za-z0-9+/]{20,}=*)'  # 异常Token
+    '(X-Original-User|Impersonate-User):\s*(system:|kube-|admin)'
+
+  request_path:
+    # 敏感API访问
+    '/(api/v1|apis)/.*?(secrets|configmaps|serviceaccounts)'
+    '/(apis/metrics\.k8s\.io|apis/custom\.metrics\.k8s\.io)/.*?(pods|nodes)'
+
+  # 容器逃逸攻击
+  params:
+    # 容器逃逸模式
+    '(docker|container|pod).*(escape|breakout|privilege|mount)'
+    '(nsenter|chroot|unshare|mount).*(host|root|privileged)'
+    '(proc|sys|dev).*(mount|access|escape)'
+
+  # Kubernetes网络攻击
+  request_path:
+    # 网络策略绕过
+    '/(apis/networking\.k8s\.io/v1)/.*?(networkpolicies|ingresses|services)'
+    '/(api/v1|apis)/.*?(endpoints|nodes|pods).*(network|port|expose)'
+
+  # 云元数据攻击
+  request_headers:
+    # 元数据服务访问
+    '(X-Metadata|X-Cloud|X-Provider):\s*(aws|azure|gcp|alibaba)'
+    '(User-Agent):\s*(curl|wget|aws-cli|gcloud|az|aliyun).*?(metadata|meta-data)'
+
+  request_path:
+    # 元数据服务请求
+    '/(latest|meta-data|metadata)/.*?(iam|security-credentials|user-data|instance-id)'
+    '/(169\.254\.169\.254|100\.100\.100\.200)/.*?(metadata|meta-data)'
+
+  # Serverless函数攻击
+  request_path:
+    # 函数代码注入
+    '/(functions|lambda|cloud.*function)/.*?(code|handler|invoke).*(inject|execute|eval)'
+    '/(api/v1|apis)/.*?(functions|triggers|actions).*(malicious|backdoor)'
+
+  params:
+    # Serverless滥用
+    '(lambda|function|handler).*(crypto|mining|malware|backdoor)'
+    '(invoke|trigger|webhook).*(abuse|attack|exploit)'
+
+  # 云存储攻击
+  request_path:
+    # 存储服务攻击
+    '/(s3|blob|storage|oss)/.*?(bucket|container|object).*(delete|modify|leak)'
+    '/(cos|minio|ceph)/.*?(access|key|secret).*(exposed|leaked)'
+
+  # 云数据库攻击
+  params:
+    # 数据库服务攻击
+    '(rds|sql|mysql|postgres|mongodb).*(password|credential|key).*(brute|dump|export)'
+    '(connection-string|conn|db).*?(exposed|leaked|public)'
+
+  # 容器镜像攻击
+  request_path:
+    # 镜像仓库攻击
+    '/(registry|repo|docker|hub)/.*?(image|push|pull).*(malicious|backdoor)'
+    '/(harbor|nexus|artifactory)/.*?(vulnerability|malware|scan)'
+
+  # 云配置错误
+  request_headers:
+    # 配置暴露
+    '(X-Config|X-Env|X-Secret):\s*(production|prod|admin|root)'
+    '(X-Access|X-Key|X-Token):\s*(AKIA|sk_|[A-Za-z0-9]{20,})'
+
+  # 云服务枚举
+  request_path:
+    # 服务发现和枚举
+    '/(api/v1|apis)/.*?(services|endpoints|ingresses).*(list|get|watch)'
+    '/(discovery|enumerate|scan).*(cloud|aws|azure|gcp|kubernetes)'
+
+  # 云监控和日志攻击
+  params:
+    # 监控绕过
+    '(monitoring|logging|audit).*(disable|bypass|tamper|delete)'
+    '(cloudtrail|cloudwatch|logs).*(stop|disable|modify)'
+
+  # 微服务间攻击
+  request_path:
+    # 服务间攻击
+    '/(api|service|microservice)/.*?(auth|token|jwt).*(steal|hijack|reuse)'
+    '/(gateway|proxy|mesh)/.*?(bypass|route|traffic).*(manipulate|redirect)'
+
+  # 云工作负载攻击
+  params:
+    # 工作负载攻击
+    '(pod|container|vm|instance).*(crypto|mining|malware|backdoor)'
+    '(job|cron|workflow).*(malicious|backdoor|persistence)'
+
+severity: critical
+category: cloud_native_threats
+description: |
+  云原生环境高级威胁检测规则，针对容器、Kubernetes和无服务器架构：
+
+  **Kubernetes安全**：
+  - RBAC权限提升检测
+  - API服务器攻击识别
+  - 集群内部威胁监控
+  - 网络策略绕过检测
+
+  **容器安全**：
+  - 容器逃逸攻击检测
+  - 特权容器滥用识别
+  - 容器镜像安全扫描
+  - 运行时威胁监控
+
+  **云元数据安全**：
+  - 元数据服务攻击检测
+  - 云凭证泄露识别
+  - 实例元数据滥用防护
+  - 云服务枚举监控
+
+  **Serverless安全**：
+  - 函数代码注入检测
+  - 无服务器架构威胁
+  - 事件触发攻击识别
+  - 函数执行异常监控
+
+  **云存储安全**：
+  - 存储服务攻击检测
+  - 存储桶配置错误识别
+  - 数据泄露威胁监控
+  - 访问权限异常检测
+
+  **云网络安全**：
+  - 云网络配置错误
+  - 安全组规则异常
+  - 负载均衡攻击识别
+  - CDN安全威胁检测
+
+  **云配置安全**：
+  - 云服务配置错误
+  - 暴露凭证检测
+  - 环境变量泄露识别
+  - 云服务滥用监控
+
+cwe: "CWE-20"
+references:
+  - "https://kubernetes.io/docs/concepts/security/"
+  - "https://csrc.nist.gov/publications/detail/sp/800-204/final"
+  - "https://owasp.org/www-project-cloud-native-application-security-top-10/"
+attack_patterns:
+  - "容器逃逸攻击"
+  - "Kubernetes权限提升"
+  - "云元数据攻击"
+  - "Serverless函数攻击"
+response_codes: [200, 201, 301, 302, 400, 401, 403, 404, 500, 502, 503]
+threat_level: "critical"
+impact: "可能导致云基础设施控制、数据泄露或服务中断"
+
+# 云原生安全配置
+cloud_native_config:
+  kubernetes_monitoring: true
+  container_runtime_protection: true
+  cloud_metadata_protection: true
+  serverless_security: true
+
+# Kubernetes安全配置
+kubernetes_config:
+  rbac_monitoring: true
+  api_server_protection: true
+  pod_security_policy: true
+  network_policy_enforcement: true
+
+# 容器安全配置
+container_config:
+  image_scanning: true
+  runtime_protection: true
+  privilege_escalation_detection: true
+  file_system_monitoring: true
+
+# 云平台配置
+cloud_platform_config:
+  aws_security: true
+  azure_security: true
+  gcp_security: true
+  alibaba_cloud_security: true
+
+# 监控配置
+monitoring_config:
+  real_time_threat_detection: true
+  anomaly_behavior_analysis: true
+  configuration_drift_detection: true
+  compliance_monitoring: true

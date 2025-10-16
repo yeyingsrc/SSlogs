@@ -1,0 +1,180 @@
+name: 软件供应链安全威胁检测
+pattern:
+  # 第三方组件漏洞检测
+  request_path: '/(node_modules|vendor|lib|packages)/.*?(vulnerable|exploit|cve|backdoor)|/(bower_components|npm|pip|maven|nuget)/.*?(malicious|compromise|trojan)'
+
+  # 依赖包攻击检测
+  params:
+    # 恶意依赖包
+    '(package|dependency|lib|module).*(malicious|backdoor|trojan|evil)'
+    '(npm|pip|gem|composer|maven).*(install|update|add).*(suspicious|malicious)'
+    '(version|ver|v):.*?(backdoor|malware|exploit|hack)'
+
+  # 软件更新劫持
+  request_path:
+    # 更新服务器劫持
+    '/(update|upgrade|patch|download)/.*?(malicious|fake|mirror|proxy)'
+    '/(auto-update|autoupdate)/.*?(compromise|hijack|redirect)'
+
+  # 恶意代码注入
+  request_body:
+    # 恶意代码模式
+    '(eval|exec|system|shell|cmd).*(base64|decode|obfuscate)'
+    '(document\.write|innerHTML|outerHTML).*(javascript|script|<)'
+    '(require|import|include).*(http|https|ftp)://(?!github\.com|npmjs\.com)'
+
+  # CI/CD管道攻击
+  request_path:
+    # 构建流程攻击
+    '/(ci|cd|jenkins|gitlab|github)/.*?(build|deploy|pipeline).*(compromise|hijack)'
+    '/(docker|kubernetes|helm|terraform)/.*?(image|build|deploy).*(malicious|backdoor)'
+
+  # 容器镜像安全
+  params:
+    # 恶意容器镜像
+    '(docker|container|image).*(malicious|backdoor|trojan|miner)'
+    '(registry|repo|repository).*(compromise|malware|evil)'
+
+  # 源代码篡改
+  request_path:
+    # 代码仓库攻击
+    '/(git|svn|mercurial|bitbucket)/.*?(commit|push|merge).*(malicious|backdoor)'
+    '/(source|src|code)/.*?(inject|modify|tamper|compromise)'
+
+  # 软件签名伪造
+  request_headers:
+    # 异常签名信息
+    '(X-Signature|X-Signed|X-Auth-Signature):.*?(invalid|fake|forged|missing)'
+    '(X-Checksum|X-Hash|X-Digest):.*?(mismatch|invalid|corrupted)'
+
+  # 依赖混淆攻击
+  params:
+    # 内部包名冲突
+    '(package|module|dependency):.*?(internal|private|company).*?(public|external|conflict)'
+    '(scope|namespace):.*@(company|internal|private).*\.js|\.ts|\.py|\.java'
+
+  # 恶意环境变量
+  request_headers:
+    # 环境变量注入
+    '(X-Env|X-Environment|X-Config):.*?(password|secret|key|token).*(exposed|leaked)'
+    '(X-Process|X-Service|X-Container):.*?(malicious|backdoor|evil)'
+
+  # 软件成分分析异常
+  params:
+    # SBOM异常
+    '(sbom|bom|components|dependencies).*(malicious|vulnerable|unknown)'
+    '(license|compliance|security).*(violation|issue|risk)'
+
+  # 第三方服务集成风险
+  request_path:
+    # 外部API滥用
+    '/(api|service|webhook)/.*?(third.*party|external).*(compromise|abuse)'
+    '/(integration|connector|plugin).*(malicious|backdoor|vulnerable)'
+
+  # 恶意脚本注入
+  request_body:
+    # 构建脚本篡改
+    '(package\.json|requirements\.txt|pom\.xml|build\.gradle).*(malicious|backdoor)'
+    '(webpack\.config|gulpfile|gruntfile|dockerfile).*(evil|hack|exploit)'
+
+  # 开发工具漏洞
+  user_agent:
+    # 开发工具异常
+    '(npm|pip|gem|composer|maven|yarn).*(malicious|backdoor|exploit)'
+    '(ide|editor|toolchain).*(compromise|backdoor|trojan)'
+
+severity: critical
+category: supply_chain
+description: |
+  软件供应链安全威胁检测规则，识别从开发到部署的整个供应链攻击：
+
+  **第三方组件安全**：
+  - 已知漏洞组件检测
+  - 恶意依赖包识别
+  - 依赖混淆攻击检测
+  - 软件成分分析(SBOM)异常
+
+  **软件更新安全**：
+  - 更新服务器劫持检测
+  - 自动更新流程攻击
+  - 镜像源污染识别
+  - 版本回滚攻击防护
+
+  **CI/CD管道安全**：
+  - 构建流程攻击检测
+  - 部署管道威胁识别
+  - 持续集成安全监控
+  - 代码提交异常检测
+
+  **容器和镜像安全**：
+  - 恶意容器镜像检测
+  - 镜像仓库攻击识别
+  - 容器运行时威胁监控
+  - Kubernetes供应链安全
+
+  **源代码安全**：
+  - 源代码篡改检测
+  - 代码仓库安全威胁
+  - 恶意代码注入识别
+  - 版本控制系统攻击
+
+  **软件签名和完整性**：
+  - 数字签名伪造检测
+  - 校验和篡改识别
+  - 软件完整性验证
+  - 证书链异常检测
+
+  **开发环境安全**：
+  - 开发工具漏洞检测
+  - IDE和编辑器安全
+  - 开发环境配置异常
+  - 调试工具滥用检测
+
+cwe: "CWE-506"
+references:
+  - "https://owasp.org/www-project-top-ten/2017/A8_2017-Insecure_Deserialization"
+  - "https://csrc.nist.gov/publications/detail/sp/800-161/final"
+  - "https://github.com/GSASDevOps/Software-Supply-Chain-Security"
+attack_patterns:
+  - "依赖混淆攻击"
+  - "软件更新劫持"
+  - "恶意依赖注入"
+  - "CI/CD管道攻击"
+response_codes: [200, 201, 301, 302, 400, 401, 403, 404, 500, 502]
+threat_level: "critical"
+impact: "可能导致恶意代码注入、系统控制或数据泄露，影响整个软件生态系统"
+
+# 供应链安全配置
+supply_chain_config:
+  enable_sca_scanning: true
+  vulnerability_database: "cve_mitre_nvd"
+  integrity_verification: true
+  signature_validation: true
+
+# 组件分析配置
+component_analysis:
+  third_party_libraries: true
+  open_source_packages: true
+  commercial_software: true
+  custom_components: true
+
+# 构建安全配置
+build_security:
+  pipeline_monitoring: true
+  artifact_verification: true
+  environment_isolation: true
+  access_control: true
+
+# 部署安全配置
+deployment_security:
+  container_image_scanning: true
+  kubernetes_policy_enforcement: true
+  runtime_protection: true
+  network_segmentation: true
+
+# 监控配置
+monitoring_config:
+  real_time_threat_detection: true
+  anomaly_behavior_analysis: true
+  compliance_monitoring: true
+  audit_logging: true

@@ -1,5 +1,71 @@
-name: 错误信息泄露检测
-pattern: '(Fatal error:|Notice:|Warning:|Exception in thread|Stack trace:|Traceback \(most recent call last\):|java\.lang\.|php\.error)'
+name: 错误信息泄露检测 (增强版)
+pattern:
+  # PHP错误信息
+  params: '(Fatal error:|Parse error:|Notice:|Warning:|Deprecated:|Strict Standards:|Recoverable fatal error:|User error:|User warning:|User notice:)'
+
+  # Java错误信息
+  params: '(Exception in thread|java\.lang\.|java\.sql\.|javax\.|org\.apache\.|org\.springframework\.|org\.hibernate\.|java\.io\.FileNotFoundException|java\.lang\.ClassNotFoundException|java\.lang\.NullPointerException)'
+
+  # Python错误信息
+  params: '(Traceback \(most recent call last\):|File ".+", line \d+|ImportError|ModuleNotFoundError|AttributeError|TypeError|ValueError|KeyError|IndexError|SyntaxError|IndentationError)'
+
+  # .NET错误信息
+  params: '(System\.|Microsoft\.|Newtonsoft\.|Exception:|at [A-Za-z_][A-Za-z0-9_]*\.|in [A-Za-z]:\\.*:\d+|Stack Trace:|Application Error:|Compilation Error:)'
+
+  # JavaScript错误信息
+  params: '(ReferenceError:|TypeError:|SyntaxError:|RangeError:|Error:|Uncaught|Cannot read property|is not a function|is not defined)'
+
+  # 数据库错误信息
+  params: '(SQLSTATE\[|ORA-\d+|MySQL server error|PostgreSQL query failed|SQLite error|ODBC.*error|Column .* doesn\'t exist|Table .* doesn\'t exist|Duplicate entry|Syntax error.*SQL)'
+
+  # Web服务器错误
+  params: '(Apache\/.*|nginx\/.*|IIS\/.*|Server Error|Internal Server Error|Not Found|Forbidden|Bad Gateway|Service Temporarily Unavailable)'
+
+  # 路径泄露
+  params: '(/[a-zA-Z]:/|/home/[^/\s]+|/var/www/|/usr/local/|C:\\\\|D:\\\\|DocumentRoot|SERVER_ROOT|__FILE__|__DIR__)'
+
+  # 配置信息泄露
+  params: '(password=|passwd=|secret=|key=|token=|api_key=|db_host=|db_user=|database=|mysql_connect|pg_connect|mongodb://)'
+
+  # 框架和CMS信息
+  params: '(WordPress|Joomla|Drupal|Magento|Zend Framework|Laravel|Symfony|CodeIgniter|Django|Flask|Rails|Spring|Node\.js|React|Vue\.js|Angular)'
+
+  # 开发工具和调试信息
+  params: '(xdebug|debug|var_dump|print_r|console\.log|alert\(|document\.write|development mode|staging environment|test environment)'
+
+  # 版本信息泄露
+  params: '(version\s+\d+\.\d+|v\d+\.\d+|\d+\.\d+\.\d+|Apache/[0-9.]+|nginx/[0-9.]+|PHP/[0-9.]+|MySQL/[0-9.]+|PostgreSQL [0-9.]+|Node\.js v[0-9.]+)'
+
+  # 环境变量泄露
+  params: '(PATH=|HOME=|USER=|SHELL=|LANG=|LC_ALL=|HTTP_|SERVER_|REQUEST_|DOCUMENT_)'
+
+  # 错误堆栈和调试信息
+  request_body: '(stack trace|call stack|debug|error log|exception log|phpinfo\(|phpversion\()'
+
 severity: medium
 category: information_disclosure
-description: 检测响应中泄露的错误信息，可能包含敏感系统细节和代码路径
+description: |
+  增强版错误信息泄露检测，识别各种敏感信息暴露：
+  - PHP/Java/Python/.NET/JavaScript 错误信息
+  - 数据库错误和查询失败
+  - Web服务器版本和配置信息
+  - 文件系统路径泄露
+  - 凭证和配置参数泄露
+  - 框架和CMS指纹信息
+  - 开发工具和调试模式信息
+  - 版本号和软件指纹
+  - 环境变量和系统信息
+  - 堆栈跟踪和调试日志
+
+cwe: "CWE-200"
+references:
+  - "https://owasp.org/www-project-top-ten/2017/A3_2017-Sensitive_Data_Exposure"
+  - "https://cheatsheetseries.owasp.org/cheatsheets/Error_Handling_Cheat_Sheet.html"
+attack_patterns:
+  - "信息泄露"
+  - "系统指纹识别"
+  - "配置信息泄露"
+  - "路径泄露"
+response_codes: [200, 404, 500, 502, 503]
+threat_level: "medium"
+impact: "可能导致系统指纹识别、敏感信息泄露或为后续攻击提供信息"

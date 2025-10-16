@@ -1,0 +1,760 @@
+{
+  "ai_ml_anomaly": [
+    {
+      "test_id": "ai_ml_anomaly_1",
+      "timestamp": "2024-01-15T10:30:00+08:00",
+      "src_ip": "192.168.1.100",
+      "request_path": "/api/users",
+      "matches": 5,
+      "matched_rules": [
+        "API安全绕过检测",
+        "Log4j漏洞利用检测 (增强版)",
+        "高频请求异常检测",
+        "异常状态码检测",
+        "自动化工具和爬虫检测"
+      ],
+      "threat_scores": [
+        10.0,
+        10.0,
+        6.4,
+        6.0,
+        5.9
+      ],
+      "success": true
+    },
+    {
+      "test_id": "ai_ml_anomaly_2",
+      "timestamp": "2024-01-15T10:30:00+08:00",
+      "src_ip": "192.168.1.101",
+      "request_path": "/api/data?param1=value1&param2=value2&param3=value3&param4=value4&param5=value5",
+      "matches": 4,
+      "matched_rules": [
+        "Log4j漏洞利用检测 (增强版)",
+        "高频请求异常检测",
+        "异常状态码检测",
+        "自动化工具和爬虫检测"
+      ],
+      "threat_scores": [
+        10.0,
+        6.4,
+        6.0,
+        5.9
+      ],
+      "success": true
+    },
+    {
+      "test_id": "ai_ml_anomaly_3",
+      "timestamp": "2024-01-15T10:30:01+08:00",
+      "src_ip": "192.168.1.101",
+      "request_path": "/api/data?param1=value1&param2=value2&param3=value3&param4=value4&param5=value5",
+      "matches": 4,
+      "matched_rules": [
+        "Log4j漏洞利用检测 (增强版)",
+        "高频请求异常检测",
+        "异常状态码检测",
+        "自动化工具和爬虫检测"
+      ],
+      "threat_scores": [
+        10.0,
+        6.4,
+        6.0,
+        5.9
+      ],
+      "success": true
+    },
+    {
+      "test_id": "ai_ml_anomaly_4",
+      "timestamp": "2024-01-15T10:30:02+08:00",
+      "src_ip": "192.168.1.101",
+      "request_path": "/api/data?param1=value1&param2=value2&param3=value3&param4=value4&param5=value5",
+      "matches": 4,
+      "matched_rules": [
+        "Log4j漏洞利用检测 (增强版)",
+        "高频请求异常检测",
+        "异常状态码检测",
+        "自动化工具和爬虫检测"
+      ],
+      "threat_scores": [
+        10.0,
+        6.4,
+        6.0,
+        5.9
+      ],
+      "success": true
+    },
+    {
+      "test_id": "ai_ml_anomaly_5",
+      "timestamp": "2024-01-15T10:30:03+08:00",
+      "src_ip": "192.168.1.101",
+      "request_path": "/api/data?param1=value1&param2=value2&param3=value3&param4=value4&param5=value5",
+      "matches": 4,
+      "matched_rules": [
+        "Log4j漏洞利用检测 (增强版)",
+        "高频请求异常检测",
+        "异常状态码检测",
+        "自动化工具和爬虫检测"
+      ],
+      "threat_scores": [
+        10.0,
+        6.4,
+        6.0,
+        5.9
+      ],
+      "success": true
+    },
+    {
+      "test_id": "ai_ml_anomaly_6",
+      "timestamp": "2024-01-15T10:30:04+08:00",
+      "src_ip": "192.168.1.101",
+      "request_path": "/api/data?param1=value1&param2=value2&param3=value3&param4=value4&param5=value5",
+      "matches": 4,
+      "matched_rules": [
+        "Log4j漏洞利用检测 (增强版)",
+        "高频请求异常检测",
+        "异常状态码检测",
+        "自动化工具和爬虫检测"
+      ],
+      "threat_scores": [
+        10.0,
+        6.4,
+        6.0,
+        5.9
+      ],
+      "success": true
+    },
+    {
+      "test_id": "ai_ml_anomaly_7",
+      "timestamp": "2024-01-15T10:35:00+08:00",
+      "src_ip": "192.168.1.102",
+      "request_path": "/api/session/change",
+      "matches": 5,
+      "matched_rules": [
+        "命令注入攻击检测 (增强版)",
+        "Log4j漏洞利用检测 (增强版)",
+        "高频请求异常检测",
+        "异常状态码检测",
+        "自动化工具和爬虫检测"
+      ],
+      "threat_scores": [
+        10.0,
+        10.0,
+        6.4,
+        6.0,
+        5.9
+      ],
+      "success": true
+    }
+  ],
+  "threat_intelligence": [
+    {
+      "test_id": "threat_intelligence_1",
+      "timestamp": "2024-01-15T11:00:00+08:00",
+      "src_ip": "185.220.101.182",
+      "request_path": "/admin/login",
+      "matches": 6,
+      "matched_rules": [
+        "安全扫描器检测",
+        "目录爆破和暴力破解检测",
+        "商用安全扫描器检测",
+        "高频请求异常检测",
+        "异常状态码检测",
+        "自动化工具和爬虫检测"
+      ],
+      "threat_scores": [
+        8.4,
+        8.4,
+        7.9,
+        6.4,
+        6.0,
+        5.9
+      ],
+      "success": true
+    },
+    {
+      "test_id": "threat_intelligence_2",
+      "timestamp": "2024-01-15T11:05:00+08:00",
+      "src_ip": "192.168.1.200",
+      "request_path": "/wp-admin/",
+      "matches": 8,
+      "matched_rules": [
+        "SQL注入攻击检测 (增强版)",
+        "Log4j漏洞利用检测 (增强版)",
+        "安全扫描器检测",
+        "目录爆破和暴力破解检测",
+        "商用安全扫描器检测",
+        "高频请求异常检测",
+        "异常状态码检测",
+        "自动化工具和爬虫检测"
+      ],
+      "threat_scores": [
+        10.0,
+        10.0,
+        8.4,
+        8.4,
+        7.9,
+        6.4,
+        6.0,
+        5.9
+      ],
+      "success": true
+    },
+    {
+      "test_id": "threat_intelligence_3",
+      "timestamp": "2024-01-15T11:10:00+08:00",
+      "src_ip": "10.0.0.50",
+      "request_path": "/api/heartbeat",
+      "matches": 6,
+      "matched_rules": [
+        "渗透测试框架检测",
+        "Log4j漏洞利用检测 (增强版)",
+        "安全扫描器检测",
+        "高频请求异常检测",
+        "异常状态码检测",
+        "自动化工具和爬虫检测"
+      ],
+      "threat_scores": [
+        10.0,
+        10.0,
+        8.4,
+        6.4,
+        6.0,
+        5.9
+      ],
+      "success": true
+    }
+  ],
+  "zero_trust": [
+    {
+      "test_id": "zero_trust_1",
+      "timestamp": "2024-01-15T12:00:00+08:00",
+      "src_ip": "192.168.1.150",
+      "request_path": "/api/login/bypass",
+      "matches": 6,
+      "matched_rules": [
+        "Log4j漏洞利用检测 (增强版)",
+        "安全扫描器检测",
+        "目录爆破和暴力破解检测",
+        "高频请求异常检测",
+        "异常状态码检测",
+        "自动化工具和爬虫检测"
+      ],
+      "threat_scores": [
+        10.0,
+        8.4,
+        8.4,
+        6.4,
+        6.0,
+        5.9
+      ],
+      "success": true
+    },
+    {
+      "test_id": "zero_trust_2",
+      "timestamp": "2024-01-15T12:05:00+08:00",
+      "src_ip": "192.168.1.151",
+      "request_path": "/api/privilege/escalate",
+      "matches": 4,
+      "matched_rules": [
+        "Log4j漏洞利用检测 (增强版)",
+        "高频请求异常检测",
+        "异常状态码检测",
+        "自动化工具和爬虫检测"
+      ],
+      "threat_scores": [
+        10.0,
+        6.4,
+        6.0,
+        5.9
+      ],
+      "success": true
+    },
+    {
+      "test_id": "zero_trust_3",
+      "timestamp": "2024-01-15T12:10:00+08:00",
+      "src_ip": "203.0.113.1",
+      "request_path": "/api/session/hijack",
+      "matches": 3,
+      "matched_rules": [
+        "高频请求异常检测",
+        "异常状态码检测",
+        "自动化工具和爬虫检测"
+      ],
+      "threat_scores": [
+        6.4,
+        6.0,
+        5.9
+      ],
+      "success": true
+    }
+  ],
+  "supply_chain": [
+    {
+      "test_id": "supply_chain_1",
+      "timestamp": "2024-01-15T13:00:00+08:00",
+      "src_ip": "192.168.1.160",
+      "request_path": "/api/npm/install",
+      "matches": 6,
+      "matched_rules": [
+        "Log4j漏洞利用检测 (增强版)",
+        "安全扫描器检测",
+        "目录爆破和暴力破解检测",
+        "高频请求异常检测",
+        "异常状态码检测",
+        "自动化工具和爬虫检测"
+      ],
+      "threat_scores": [
+        10.0,
+        8.4,
+        8.4,
+        6.4,
+        6.0,
+        5.9
+      ],
+      "success": true
+    },
+    {
+      "test_id": "supply_chain_2",
+      "timestamp": "2024-01-15T13:05:00+08:00",
+      "src_ip": "10.0.0.100",
+      "request_path": "/api/docker/pull",
+      "matches": 6,
+      "matched_rules": [
+        "渗透测试框架检测",
+        "Log4j漏洞利用检测 (增强版)",
+        "云原生安全威胁检测",
+        "高频请求异常检测",
+        "异常状态码检测",
+        "自动化工具和爬虫检测"
+      ],
+      "threat_scores": [
+        10.0,
+        10.0,
+        9.55,
+        6.4,
+        6.0,
+        5.9
+      ],
+      "success": true
+    },
+    {
+      "test_id": "supply_chain_3",
+      "timestamp": "2024-01-15T13:10:00+08:00",
+      "src_ip": "192.168.1.161",
+      "request_path": "/api/jenkins/build",
+      "matches": 5,
+      "matched_rules": [
+        "渗透测试框架检测",
+        "Log4j漏洞利用检测 (增强版)",
+        "高频请求异常检测",
+        "异常状态码检测",
+        "自动化工具和爬虫检测"
+      ],
+      "threat_scores": [
+        10.0,
+        10.0,
+        6.4,
+        6.0,
+        5.9
+      ],
+      "success": true
+    }
+  ],
+  "cloud_native": [
+    {
+      "test_id": "cloud_native_1",
+      "timestamp": "2024-01-15T14:00:00+08:00",
+      "src_ip": "10.244.0.1",
+      "request_path": "/apis/rbac.authorization.k8s.io/v1/clusterroles",
+      "matches": 4,
+      "matched_rules": [
+        "Log4j漏洞利用检测 (增强版)",
+        "高频请求异常检测",
+        "异常状态码检测",
+        "自动化工具和爬虫检测"
+      ],
+      "threat_scores": [
+        10.0,
+        6.4,
+        6.0,
+        5.9
+      ],
+      "success": true
+    },
+    {
+      "test_id": "cloud_native_2",
+      "timestamp": "2024-01-15T14:05:00+08:00",
+      "src_ip": "172.17.0.2",
+      "request_path": "/api/container/escape",
+      "matches": 5,
+      "matched_rules": [
+        "命令注入攻击检测 (增强版)",
+        "Log4j漏洞利用检测 (增强版)",
+        "高频请求异常检测",
+        "异常状态码检测",
+        "自动化工具和爬虫检测"
+      ],
+      "threat_scores": [
+        10.0,
+        10.0,
+        6.4,
+        6.0,
+        5.9
+      ],
+      "success": true
+    },
+    {
+      "test_id": "cloud_native_3",
+      "timestamp": "2024-01-15T14:10:00+08:00",
+      "src_ip": "169.254.169.254",
+      "request_path": "/latest/meta-data/iam/security-credentials",
+      "matches": 5,
+      "matched_rules": [
+        "命令注入攻击检测 (增强版)",
+        "安全扫描器检测",
+        "目录爆破和暴力破解检测",
+        "高频请求异常检测",
+        "自动化工具和爬虫检测"
+      ],
+      "threat_scores": [
+        10.0,
+        8.4,
+        8.4,
+        6.4,
+        5.9
+      ],
+      "success": true
+    }
+  ],
+  "privacy_compliance": [
+    {
+      "test_id": "privacy_compliance_1",
+      "timestamp": "2024-01-15T15:00:00+08:00",
+      "src_ip": "192.168.1.170",
+      "request_path": "/api/personal_data/export",
+      "matches": 6,
+      "matched_rules": [
+        "渗透测试框架检测",
+        "Log4j漏洞利用检测 (增强版)",
+        "目录爆破和暴力破解检测",
+        "高频请求异常检测",
+        "异常状态码检测",
+        "自动化工具和爬虫检测"
+      ],
+      "threat_scores": [
+        10.0,
+        10.0,
+        8.4,
+        6.4,
+        6.0,
+        5.9
+      ],
+      "success": true
+    },
+    {
+      "test_id": "privacy_compliance_2",
+      "timestamp": "2024-01-15T15:05:00+08:00",
+      "src_ip": "192.168.1.171",
+      "request_path": "/api/user/profile",
+      "matches": 4,
+      "matched_rules": [
+        "Log4j漏洞利用检测 (增强版)",
+        "高频请求异常检测",
+        "异常状态码检测",
+        "自动化工具和爬虫检测"
+      ],
+      "threat_scores": [
+        10.0,
+        6.4,
+        6.0,
+        5.9
+      ],
+      "success": true
+    },
+    {
+      "test_id": "privacy_compliance_3",
+      "timestamp": "2024-01-15T15:10:00+08:00",
+      "src_ip": "192.168.1.172",
+      "request_path": "/api/consent/bypass",
+      "matches": 5,
+      "matched_rules": [
+        "渗透测试框架检测",
+        "Log4j漏洞利用检测 (增强版)",
+        "高频请求异常检测",
+        "异常状态码检测",
+        "自动化工具和爬虫检测"
+      ],
+      "threat_scores": [
+        10.0,
+        10.0,
+        6.4,
+        6.0,
+        5.9
+      ],
+      "success": true
+    }
+  ],
+  "financial_security": [
+    {
+      "test_id": "financial_security_1",
+      "timestamp": "2024-01-15T16:00:00+08:00",
+      "src_ip": "192.168.1.180",
+      "request_path": "/api/payment/process",
+      "matches": 5,
+      "matched_rules": [
+        "渗透测试框架检测",
+        "Log4j漏洞利用检测 (增强版)",
+        "高频请求异常检测",
+        "异常状态码检测",
+        "自动化工具和爬虫检测"
+      ],
+      "threat_scores": [
+        10.0,
+        10.0,
+        6.4,
+        6.0,
+        5.9
+      ],
+      "success": true
+    },
+    {
+      "test_id": "financial_security_2",
+      "timestamp": "2024-01-15T16:05:00+08:00",
+      "src_ip": "192.168.1.181",
+      "request_path": "/api/transfer/funds",
+      "matches": 4,
+      "matched_rules": [
+        "Log4j漏洞利用检测 (增强版)",
+        "高频请求异常检测",
+        "异常状态码检测",
+        "自动化工具和爬虫检测"
+      ],
+      "threat_scores": [
+        10.0,
+        6.4,
+        6.0,
+        5.9
+      ],
+      "success": true
+    },
+    {
+      "test_id": "financial_security_3",
+      "timestamp": "2024-01-15T16:10:00+08:00",
+      "src_ip": "192.168.1.182",
+      "request_path": "/api/crypto/wallet/drain",
+      "matches": 5,
+      "matched_rules": [
+        "Log4j漏洞利用检测 (增强版)",
+        "加密货币挖矿攻击检测",
+        "高频请求异常检测",
+        "异常状态码检测",
+        "自动化工具和爬虫检测"
+      ],
+      "threat_scores": [
+        10.0,
+        8.9,
+        6.4,
+        6.0,
+        5.9
+      ],
+      "success": true
+    }
+  ],
+  "user_behavior": [
+    {
+      "test_id": "user_behavior_1",
+      "timestamp": "2024-01-15T03:00:00+08:00",
+      "src_ip": "192.168.1.190",
+      "request_path": "/api/sensitive_data",
+      "matches": 4,
+      "matched_rules": [
+        "Log4j漏洞利用检测 (增强版)",
+        "高频请求异常检测",
+        "异常状态码检测",
+        "自动化工具和爬虫检测"
+      ],
+      "threat_scores": [
+        10.0,
+        6.4,
+        6.0,
+        5.9
+      ],
+      "success": true
+    },
+    {
+      "test_id": "user_behavior_2",
+      "timestamp": "2024-01-15T10:00:00+08:00",
+      "src_ip": "192.168.1.191",
+      "request_path": "/api/users/export?all=true",
+      "matches": 7,
+      "matched_rules": [
+        "API安全绕过检测",
+        "渗透测试框架检测",
+        "Log4j漏洞利用检测 (增强版)",
+        "目录爆破和暴力破解检测",
+        "高频请求异常检测",
+        "异常状态码检测",
+        "自动化工具和爬虫检测"
+      ],
+      "threat_scores": [
+        10.0,
+        10.0,
+        10.0,
+        8.4,
+        6.4,
+        6.0,
+        5.9
+      ],
+      "success": true
+    },
+    {
+      "test_id": "user_behavior_3",
+      "timestamp": "2024-01-15T10:05:00+08:00",
+      "src_ip": "203.0.113.1",
+      "request_path": "/api/session/hijack",
+      "matches": 3,
+      "matched_rules": [
+        "高频请求异常检测",
+        "异常状态码检测",
+        "自动化工具和爬虫检测"
+      ],
+      "threat_scores": [
+        6.4,
+        6.0,
+        5.9
+      ],
+      "success": true
+    }
+  ],
+  "attack_chain": [
+    {
+      "test_id": "attack_chain_1",
+      "timestamp": "2024-01-15T17:00:00+08:00",
+      "src_ip": "192.168.1.200",
+      "request_path": "/api/phishing/login",
+      "matches": 6,
+      "matched_rules": [
+        "Log4j漏洞利用检测 (增强版)",
+        "安全扫描器检测",
+        "目录爆破和暴力破解检测",
+        "高频请求异常检测",
+        "异常状态码检测",
+        "自动化工具和爬虫检测"
+      ],
+      "threat_scores": [
+        10.0,
+        8.4,
+        8.4,
+        6.4,
+        6.0,
+        5.9
+      ],
+      "success": true
+    },
+    {
+      "test_id": "attack_chain_2",
+      "timestamp": "2024-01-15T17:05:00+08:00",
+      "src_ip": "192.168.1.200",
+      "request_path": "/api/execute/payload",
+      "matches": 5,
+      "matched_rules": [
+        "渗透测试框架检测",
+        "Log4j漏洞利用检测 (增强版)",
+        "高频请求异常检测",
+        "异常状态码检测",
+        "自动化工具和爬虫检测"
+      ],
+      "threat_scores": [
+        10.0,
+        10.0,
+        6.4,
+        6.0,
+        5.9
+      ],
+      "success": true
+    },
+    {
+      "test_id": "attack_chain_3",
+      "timestamp": "2024-01-15T17:10:00+08:00",
+      "src_ip": "192.168.1.200",
+      "request_path": "/api/lateral/movement",
+      "matches": 4,
+      "matched_rules": [
+        "Log4j漏洞利用检测 (增强版)",
+        "高频请求异常检测",
+        "异常状态码检测",
+        "自动化工具和爬虫检测"
+      ],
+      "threat_scores": [
+        10.0,
+        6.4,
+        6.0,
+        5.9
+      ],
+      "success": true
+    }
+  ],
+  "automated_response": [
+    {
+      "test_id": "automated_response_1",
+      "timestamp": "2024-01-15T18:00:00+08:00",
+      "src_ip": "192.168.1.210",
+      "request_path": "/api/firewall/block/ip",
+      "matches": 4,
+      "matched_rules": [
+        "Log4j漏洞利用检测 (增强版)",
+        "高频请求异常检测",
+        "异常状态码检测",
+        "自动化工具和爬虫检测"
+      ],
+      "threat_scores": [
+        10.0,
+        6.4,
+        6.0,
+        5.9
+      ],
+      "success": true
+    },
+    {
+      "test_id": "automated_response_2",
+      "timestamp": "2024-01-15T18:05:00+08:00",
+      "src_ip": "192.168.1.211",
+      "request_path": "/api/security/isolate/system",
+      "matches": 5,
+      "matched_rules": [
+        "渗透测试框架检测",
+        "Log4j漏洞利用检测 (增强版)",
+        "高频请求异常检测",
+        "异常状态码检测",
+        "自动化工具和爬虫检测"
+      ],
+      "threat_scores": [
+        10.0,
+        10.0,
+        6.4,
+        6.0,
+        5.9
+      ],
+      "success": true
+    },
+    {
+      "test_id": "automated_response_3",
+      "timestamp": "2024-01-15T18:10:00+08:00",
+      "src_ip": "192.168.1.212",
+      "request_path": "/api/security/alert/escalate",
+      "matches": 4,
+      "matched_rules": [
+        "Log4j漏洞利用检测 (增强版)",
+        "高频请求异常检测",
+        "异常状态码检测",
+        "自动化工具和爬虫检测"
+      ],
+      "threat_scores": [
+        10.0,
+        6.4,
+        6.0,
+        5.9
+      ],
+      "success": true
+    }
+  ]
+}

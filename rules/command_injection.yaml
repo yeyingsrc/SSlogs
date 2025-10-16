@@ -1,5 +1,68 @@
-name: 命令注入攻击检测
-pattern: '(\;|\&\&|\|\||\|)\s*(ls|cat|rm|whoami|id|ping|nc|netcat|bash|sh|cmd\.exe|powershell)'
-severity: high
+name: 命令注入攻击检测 (增强版)
+pattern:
+  # 命令分隔符和管道
+  params: '(\;|\&\&|\|\||\||\&|`|\$\(|\n|\r)\s*'
+
+  # 系统信息收集命令
+  params: '(whoami|id|uname|hostname|pwd|ls|dir|cat|type|more|less|head|tail|grep|find|which|whereis)'
+
+  # 网络相关命令
+  params: '(ping|traceroute|nslookup|dig|netstat|ss|lsof|curl|wget|nc|netcat|telnet|ftp|ssh|rsync)'
+
+  # 文件操作命令
+  params: '(rm|mv|cp|touch|chmod|chown|chgrp|mkdir|rmdir|tar|zip|unzip|gzip|gunzip)'
+
+  # 进程管理命令
+  params: '(ps|top|kill|killall|pkill|nohup|bg|fg|jobs|cron|at|batch)'
+
+  # Windows命令
+  params: '(cmd\.exe|powershell|wscript|cscript|tasklist|taskkill|netstat|ipconfig|systeminfo|wmic|reg|dir|type|del|copy|move|attrib|icacls)'
+
+  # 编程和解释器
+  params: '(python|perl|ruby|php|node|java|javac|gcc|g\+\+|make|bash|sh|zsh|csh|tcsh|ksh)'
+
+  # 数据库命令
+  params: '(mysql|psql|sqlite|mongo|redis|oracle|sqlplus|isql)'
+
+  # 攻击工具和后门
+  params: '(nc|netcat|socat|nmap|masscan|hydra|medusa|john|hashcat|aircrack|metasploit|msfconsole)'
+
+  # 管道和重定向
+  params: '(>|>>|<|<<|2>|2>>|&>|&>>|2>&1|1>&2|tee|xargs|awk|sed|sort|uniq|cut|tr)'
+
+  # 后台执行和计划任务
+  params: '(&|nohup|screen|tmux|at|cron|crontab|systemd|service|systemctl)'
+
+  # 编码绕过
+  decoded_params: '(command|cmd|exec|system|shell).*(base64|hex|url|rot13|unicode)'
+
+  # User-Agent中的命令注入
+  user_agent: '(wget|curl|nc|netcat|nmap|python|perl|ruby|bash|sh|powershell|cmd\.exe)'
+
+severity: critical
 category: command_injection
-description: 检测常见的命令注入攻击模式，包括命令分隔符和系统命令执行尝试
+description: |
+  增强版命令注入检测，覆盖广泛的攻击向量：
+  - 命令分隔符和管道操作
+  - 系统信息收集命令
+  - 网络扫描和连接工具
+  - 文件系统操作
+  - 进程管理和权限操作
+  - Windows和Linux命令
+  - 编程语言解释器
+  - 数据库客户端工具
+  - 攻击工具和后门程序
+  - 编码绕过技术
+
+cwe: "CWE-78"
+references:
+  - "https://owasp.org/www-project-top-ten/2017/A1_2017-Injection"
+  - "https://owasp.org/www-project-web-security-testing-guide/latest/4-Web_Application_Security_Testing/07-Input_Validation_Testing/10-Testing_for_Command_Injection"
+attack_patterns:
+  - "命令注入"
+  - "参数注入"
+  - "代码注入"
+  - "后门植入"
+response_codes: [200, 403, 500, 502]
+threat_level: "critical"
+impact: "可能导致系统命令执行、权限提升或横向移动"

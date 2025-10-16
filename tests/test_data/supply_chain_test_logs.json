@@ -1,0 +1,32 @@
+[
+  {
+    "timestamp": "2024-01-15T13:00:00+08:00",
+    "src_ip": "192.168.1.160",
+    "request_method": "POST",
+    "request_path": "/api/npm/install",
+    "http_version": "HTTP/1.1",
+    "status_code": "200",
+    "user_agent": "npm/8.5.5 node/v18.12.1 darwin x64",
+    "request_body": "{\"package\": \"malicious-package\", \"version\": \"backdoor\"}"
+  },
+  {
+    "timestamp": "2024-01-15T13:05:00+08:00",
+    "src_ip": "10.0.0.100",
+    "request_method": "POST",
+    "request_path": "/api/docker/pull",
+    "http_version": "HTTP/1.1",
+    "status_code": "200",
+    "user_agent": "docker/20.10.12",
+    "request_body": "{\"image\": \"malicious/docker:latest\", \"backdoor\": \"true\"}"
+  },
+  {
+    "timestamp": "2024-01-15T13:10:00+08:00",
+    "src_ip": "192.168.1.161",
+    "request_method": "POST",
+    "request_path": "/api/jenkins/build",
+    "http_version": "HTTP/1.1",
+    "status_code": "200",
+    "user_agent": "Jenkins-CI/2.401.3",
+    "request_body": "{\"build\": \"compromise\", \"backdoor\": \"inject\"}"
+  }
+]

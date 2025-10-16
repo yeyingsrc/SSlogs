@@ -1,0 +1,215 @@
+name: 用户实体行为分析(UEBA)检测
+pattern:
+  # 用户访问模式异常
+  request_headers:
+    # 异常访问时间
+    '(X-Time|X-Hour|X-Access-Time):\s*([0-2]\d:[0-5]\d):(00-59|59)'
+    # 异常地理位置
+    '(X-Country|X-Region|X-GeoIP):\s*(CN|RU|KP|IR|AF|PK|BD)'
+    # 异常设备
+    '(X-Device|X-Platform|X-Browser):\s*(new|unknown|untrusted|first.*time)'
+
+  # 会话行为异常
+  params:
+    # 会话异常模式
+    '(session|token|jwt).*(hijack|steal|reuse|share|multiple)'
+    '(login|auth|signin).*(multiple|concurrent|simultaneous).*(session|location)'
+    '(logout|signout|timeout).*(bypass|override|disable)'
+
+  # 数据访问行为异常
+  request_path:
+    # 异常数据访问
+    '/(api|data|info|records)/.*?(bulk|mass|large|all|entire|complete)'
+    '/(export|download|backup|archive).*(sensitive|confidential|private|personal)'
+    '/(user|account|customer).*(list|all|directory|database)'
+
+  # 操作行为异常
+  request_body:
+    # 异常操作模式
+    '{"(action|operation|command)":\s*"(delete|remove|drop|truncate|reset)"}'
+    '{"(bulk|batch|multi|all).*(process|execute|run|perform)":\s*(true|1|yes)}'
+    '{"(admin|root|super|privilege).*(escalate|elevate|grant|bypass)":\s*(true|1|yes)}'
+
+  # 权限使用异常
+  params:
+    # 权限滥用模式
+    '(privilege|permission|access|role).*(abuse|misuse|excessive|unusual)'
+    '(admin|root|super|sudo).*(access|login|operation).*(suspicious|unauthorized)'
+    '(sensitive|critical|restricted).*(access|operation|download).*(multiple|frequent)'
+
+  # 网络行为异常
+  src_ip:
+    # 异常网络行为
+    '(192\.168\.\d+\.\d+).*?(10\.\d+\.\d+\.\d+|172\.\d+\.\d+\.\d+)'  # 跨网段访问
+    '(\d+\.\d+\.\d+\.\d+).*?(\d+\.\d+\.\d+\.\d+).{10,}'  # 频繁IP切换
+
+  # 文件操作异常
+  request_path:
+    # 文件操作异常
+    '/(files|documents|media|uploads).*(delete|remove|mass|bulk|multiple)'
+    '/(config|setting|backup|log).*(modify|delete|access|download)'
+
+  params:
+    # 文件访问异常
+    '(file|document|media).*(access|download|view).*(suspicious|unusual|bulk)'
+    '(extension|type|format).*(executable|script|batch).*(upload|download)'
+
+  # API调用异常
+  request_path:
+    # API使用异常
+    '/(api|service|endpoint)/.*?(flood|abuse|excessive|rapid|burst)'
+    '/(graphql|rest|soap).*(query|request).*(complex|expensive|resource.*intensive)'
+
+  params:
+    # API调用模式异常
+    '(api|endpoint|service).*(call|request|invoke).*(rate|frequency|volume).*(excessive|unusual)'
+    '(query|request|parameter).*(size|length|complexity).*(excessive|suspicious)'
+
+  # 认证行为异常
+  request_headers:
+    # 认证异常模式
+    '(X-Login|X-Auth|X-Authentication):\s*(failed|multiple|brute|abnormal)'
+    '(X-Password|X-Credential|X-Token):\s*(reset|change|recovery).*(multiple|suspicious)'
+
+  params:
+    # 认证行为异常
+    '(login|auth|signin).*(failure|error|attempt).*(multiple|brute|suspicious)'
+    '(password|credential|token).*(reset|recovery|change).*(abuse|suspicious|bulk)'
+
+  # 用户角色异常
+  request_body:
+    # 角色行为异常
+    '{"(user|account|profile).*(role|permission|access).*(change|modify|escalate)"}'
+    '{"(privilege|admin|root).*(grant|assign|bestow)":\s*"(unauthorized|suspicious)"}'
+
+  # 时间序列异常
+  request_headers:
+    # 时间模式异常
+    '(X-Session-Duration|X-Active-Time):\s*([0-9]+)'
+    '(X-Request-Frequency|X-Rate):\s*(abnormal|excessive|suspicious)'
+
+  # 行为基线偏离
+  request_body:
+    # 基线偏离检测
+    '{"(behavior|pattern|activity).*(baseline|normal|usual).*(deviation|violation|exceed)"}'
+    '{"(risk|threat|anomaly).*(score|level|assessment)":\s*"(high|critical|dangerous)"}'
+
+  # 对等群体分析异常
+  params:
+    # 对等群体异常
+    '(peer|group|comparison).*(behavior|activity|pattern).*(deviation|outlier|unusual)'
+    '(benchmark|baseline|average).*(exceed|violate|deviate).*(normal|expected|standard)'
+
+  # 上下文感知异常
+  request_headers:
+    # 上下文异常
+    '(X-Context|X-Environment|X-Scenario):\s*(inconsistent|abnormal|suspicious)'
+    '(X-Risk|X-Threat|X-Danger):\s*(elevated|high|critical)'
+
+  # 自动化行为检测
+  user_agent:
+    # 自动化工具识别
+    '(bot|crawler|spider|scraper|automated).*(behavior|activity|pattern)'
+    '(script|program|tool).*(automated|scheduled|batch).*(operation|execution)'
+
+severity: medium
+category: user_behavior_analysis
+description: |
+  用户实体行为分析(UEBA)检测规则，监控用户行为异常和威胁：
+
+  **行为基线分析**：
+  - 用户正常行为模式学习
+  - 行为基线偏离检测
+  - 异常行为模式识别
+  - 个性化风险评估
+
+  **访问行为监控**：
+  - 异常访问时间检测
+  - 地理位置异常分析
+  - 设备使用异常监控
+  - 访问频率异常识别
+
+  **数据访问分析**：
+  - 数据访问模式异常
+  - 敏感数据访问监控
+  - 批量数据下载检测
+  - 数据访问权限滥用
+
+  **操作行为分析**：
+  - 异常操作模式检测
+  - 权限使用异常监控
+  - 危险操作识别
+  - 操作序列异常分析
+
+  **会话行为监控**：
+  - 会话持续时间异常
+  - 并发会话检测
+  - 会话劫持识别
+  - 异常登录模式分析
+
+  **网络行为分析**：
+  - 网络访问模式异常
+  - IP地址变更监控
+  - 网络流量异常检测
+  - 跨网段访问分析
+
+  **对等群体分析**：
+  - 用户群体行为比较
+  - 异常行为识别
+  - 行为模式聚类分析
+  - 群体偏离检测
+
+  **上下文感知分析**：
+  - 环境上下文异常检测
+  - 业务场景异常识别
+  - 时间上下文分析
+  - 风险上下文评估
+
+cwe: "CWE-200"
+references:
+  - "https://ieeexplore.ieee.org/document/8932838/"
+  - "https://www.gartner.com/en/information-technology/insights/ueba-user-and-entity-behavior-analytics"
+  - "https://www.sans.org/white-papers/36942/"
+attack_patterns:
+  - "内部威胁"
+  - "账户劫持"
+  - "权限滥用"
+  - "数据盗窃"
+response_codes: [200, 201, 301, 302, 400, 401, 403, 404, 429, 500, 503]
+threat_level: "medium"
+impact: "可能表示内部威胁、账户被盗或恶意行为，需要进一步调查"
+
+# UEBA配置配置
+ueba_config:
+  enable_behavioral_profiling: true
+  baseline_learning_period: 30  # 30天学习期
+  anomaly_threshold: 0.7
+  peer_group_analysis: true
+
+# 行为分析配置
+behavioral_analysis:
+  access_patterns: true
+  time_patterns: true
+  data_access: true
+  operation_patterns: true
+
+# 基线配置
+baseline_config:
+  machine_learning: true
+  statistical_analysis: true
+  adaptive_thresholds: true
+  continuous_learning: true
+
+# 风险评估配置
+risk_assessment:
+  real_time_scoring: true
+  contextual_risk_factors: true
+  risk_tiering: true
+  escalation_rules: true
+
+# 监控配置
+monitoring_config:
+  user_activity_monitoring: true
+  entity_relationship_mapping: true
+  behavior_drift_detection: true
+  automated_alerting: true

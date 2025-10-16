@@ -1,0 +1,261 @@
+name: 自动化响应触发规则
+pattern:
+  # 自动阻断触发
+  request_headers:
+    # 阻断指令触发
+    '(X-Block|X-Block-IP|X-Firewall):\s*(true|1|yes|immediate|now)'
+    '(X-Block-Duration|X-Block-Time):\s*([0-9]+|[A-Za-z]+)'
+    '(X-Block-Reason|X-Block-Cause):\s*(attack|malicious|threat|violation)'
+
+  request_path:
+    # 阻断操作触发
+    '/(block|deny|drop|reject).*(ip|user|session|request)'
+    '/(firewall|waf|ids|ips).*(block|deny|drop|trigger)'
+
+  # 自动隔离触发
+  request_body:
+    # 隔离指令触发
+    '{"(quarantine|isolate|sandbox).*(trigger|activate|enable)":\s*(true|1|yes)}'
+    '{"(container|vm|user|device).*(isolate|quarantine)":\s*(true|1|yes)}'
+
+  params:
+    # 隔离条件触发
+    '(quarantine|isolate|sandbox).*(condition|trigger|rule|threshold)'
+    '(malware|virus|trojan|backdoor).*(detected|found|identified)'
+
+  # 告警升级触发
+  request_headers:
+    # 告警升级指令
+    '(X-Alert-escalate|X-Severity-Upgrade):\s*(true|1|yes|high|critical)'
+    '(X-Alert-Level|X-Threat-Level):\s*(escalated|upgraded|increased)'
+    '(X-Escalation-Reason|X-Upgrade-Cause):\s*(APT|critical|massive|severe)'
+
+  params:
+    # 升级条件触发
+    '(escalate|upgrade|increase).*(severity|level|priority|urgency)'
+    '(critical|severe|major|emergency).*(threat|attack|incident)'
+
+  # 事件创建触发
+  request_body:
+    # 事件创建指令
+    '{"(incident|event|case).*(create|open|start|initiate)":\s*(true|1|yes)}'
+    '{"(ticket|alert|notification).*(generate|create|send)":\s*(true|1|yes)}'
+
+  request_path:
+    # 事件创建端点
+    '/(incident|event|case).*(create|open|start|initiate)'
+    '/(security|soc|csirt).*(incident|event|alert)'
+
+  # 自动修复触发
+  params:
+    # 修复操作触发
+    '(remediate|fix|repair|patch).*(automatic|auto|immediate)'
+    '(vulnerability|weakness|misconfig).*(fix|patch|remediate|secure)'
+
+  request_body:
+    # 修复指令触发
+    '{"(remediate|fix|repair|patch)":\s*(true|1|yes|automatic|auto)}'
+    '{"(security|config|setting).*(harden|strengthen|improve)":\s*(true|1|yes)}'
+
+  # 通知发送触发
+  request_headers:
+    # 通知指令触发
+    '(X-Notify|X-Alert|X-Notification):\s*(send|deliver|broadcast|immediate)'
+    '(X-Notify-Type|X-Alert-Channel):\s*(email|sms|slack|teams|webhook)'
+
+  params:
+    # 通知条件触发
+    '(notify|alert|inform).*(admin|security|team|management)'
+    '(critical|urgent|emergency|high).*(notification|alert|message)'
+
+  # 用户会话终止触发
+  request_path:
+    # 会话终止操作
+    '/(session|login|connection).*(terminate|kill|end|logout|disconnect)'
+    '/(user|account).*(disable|suspend|lock|terminate)'
+
+  params:
+    # 会话终止条件
+    '(terminate|kill|end|logout).*(session|connection|login)'
+    '(compromise|breach|attack).*(detected|identified|confirmed)'
+
+  # 数据保护触发
+  request_body:
+    # 数据保护操作
+    '{"(protect|encrypt|backup|archive).*(data|files|database)":\s*(true|1|yes)}'
+    '{"(access|permission|privilege).*(revoke|deny|restrict)":\s*(true|1|yes)}'
+
+  params:
+    # 数据保护条件
+    '(protect|encrypt|backup|secure).*(sensitive|critical|confidential)'
+    '(data|information|records).*(breach|leak|exposure|compromise)'
+
+  # 系统状态变更触发
+  request_path:
+    # 系统状态操作
+    '/(system|service|application).*(shutdown|restart|stop|disable)'
+    '/(network|firewall|ids|ips).*(enable|activate|engage)'
+
+  request_headers:
+    # 状态变更指令
+    '(X-System-Action|X-Status-Change):\s*(shutdown|restart|emergency|maintenance)'
+    '(X-Service-Status|X-App-State):\s*(stop|disable|quarantine|safe)'
+
+  # 威胁狩猎触发
+  params:
+    # 威胁狩猎启动
+    '(hunt|search|investigate|analyze).*(threat|malware|attack|APT)'
+    '(threat.*hunt|cyber.*hunt|proactive.*hunt).*(start|begin|initiate)'
+
+  request_body:
+    # 狩猎任务创建
+    '{"(hunt|investigation|analysis).*(task|job|mission)":\s*(create|start|begin)}'
+
+  # 合规检查触发
+  request_path:
+    # 合规检查启动
+    '/(compliance|audit|regulatory).*(check|scan|verify|validate)'
+    '/(policy|standard|framework).*(assessment|evaluation|review)'
+
+  params:
+    # 合规检查条件
+    '(compliance|audit|regulatory).*(violation|breach|non.*compliance)'
+    '(policy|standard|rule).*(violation|breach|infraction)'
+
+  # 响应自动化流程触发
+  request_body:
+    # 自动化流程启动
+    '{"(workflow|playbook|procedure).*(execute|run|start|trigger)":\s*(true|1|yes)}'
+    '{"(automation|orchestration).*(activate|enable|engage)":\s*(true|1|yes)}'
+
+  params:
+    # 流程触发条件
+    '(workflow|playbook|runbook).*(trigger|execute|run|start)'
+    '(automatic|auto|orchestrated).*(response|action|remediation)'
+
+  # 威胁情报更新触发
+  request_path:
+    # 情报更新操作
+    '/(threat.*intel|ioc|indicator).*(update|refresh|sync|download)'
+    '/(reputation|blacklist|whitelist).*(update|refresh|reload)'
+
+  params:
+    # 情报更新条件
+    '(threat.*intel|ioc|indicator).*(update|refresh|sync|download)'
+    '(new|fresh|latest|recent).*(threat|intel|indicator)'
+
+severity: high
+category: automated_response
+description: |
+  自动化响应触发规则，实现威胁事件的自动检测和响应：
+
+  **自动阻断响应**：
+  - 恶意IP自动阻断
+  - 用户会话自动终止
+  - 攻击流量自动丢弃
+  - 防火墙规则自动更新
+
+  **自动隔离响应**：
+  - 恶意软件自动隔离
+  - 受感染系统自动隔离
+  - 可疑文件自动沙箱化
+  - 异常行为自动隔离
+
+  **告警升级响应**：
+  - 高危威胁自动升级
+  - 关键告警自动推送
+  - 紧急事件自动通知
+  - 威胁等级自动调整
+
+  **事件创建响应**：
+  - 安全事件自动创建
+  - 工单系统自动集成
+  - 事件分类自动标记
+  - 响应团队自动通知
+
+  **自动修复响应**：
+  - 漏洞自动修补
+  - 配置错误自动修复
+  - 安全设置自动加固
+  - 系统状态自动恢复
+
+  **通知发送响应**：
+  - 相关人员自动通知
+  - 告警信息自动分发
+  - 事件状态自动更新
+  - 报告自动生成发送
+
+  **数据保护响应**：
+  - 敏感数据自动加密
+  - 访问权限自动撤销
+  - 数据备份自动启动
+  - 泄露路径自动阻断
+
+  **威胁狩猎响应**：
+  - 威胁狩猎自动启动
+  - IOC指标自动搜索
+  - 异常行为自动分析
+  - 威胁模式自动识别
+
+cwe: "CWE-20"
+references:
+  - "https://www.nist.gov/cyberframework"
+  - "https://attack.mitre.org/matrices/enterprise/"
+  - "https://www.sans.org/white-papers/36897/"
+attack_patterns:
+  - "自动化攻击"
+  - "大规模攻击"
+  - "快速传播威胁"
+  - "持续性攻击"
+response_codes: [200, 201, 301, 302, 400, 401, 403, 404, 500, 503]
+threat_level: "high"
+impact: "自动响应机制可以快速阻止威胁，减少人工响应时间和潜在损失"
+
+# 自动化响应配置
+automation_config:
+  enable_auto_blocking: true
+  enable_auto_isolation: true
+  enable_auto_escalation: true
+  enable_auto_remediation: true
+
+# 阻断配置
+blocking_config:
+  ip_blocking: true
+  user_blocking: true
+  session_termination: true
+  rate_limiting: true
+
+# 隔离配置
+quarantine_config:
+  file_quarantine: true
+  system_quarantine: true
+  network_isolation: true
+  application_sandboxing: true
+
+# 通知配置
+notification_config:
+  email_notifications: true
+  sms_notifications: true
+  slack_notifications: true
+  webhook_notifications: true
+
+# 升级配置
+escalation_config:
+  severity_based_escalation: true
+  time_based_escalation: true
+  threshold_based_escalation: true
+  contextual_escalation: true
+
+# 修复配置
+remediation_config:
+  vulnerability_patching: true
+  configuration_remediation: true
+  security_hardening: true
+  service_recovery: true
+
+# 工作流配置
+workflow_config:
+  playbook_execution: true
+  orchestration_integration: true
+  approval_workflows: true
+  audit_trail: true

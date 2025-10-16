@@ -1,0 +1,226 @@
+name: 攻击链关联检测规则
+pattern:
+  # 攻击链阶段1：初始访问
+  request_headers:
+    # 初始访问特征
+    '(X-Attack-Stage|X-Kill-Chain):\s*(initial.*access|reconnaissance|weaponization)'
+    '(X-Mitre-Tactic|X-ATT&CK):\s*(TA0001|Initial.*Access)'
+
+  request_path:
+    # 初始访问模式
+    '/(phishing|social|credential|brute.*force).*(attack|attempt|campaign)'
+    '/(exploit|vulnerability|zero.*day).*(access|entry|infection)'
+
+  # 攻击链阶段2：执行
+  params:
+    # 执行阶段特征
+    '(execute|run|launch|spawn).*(payload|code|command|script)'
+    '(eval|system|exec|shell).*(malicious|backdoor|evil)'
+
+  request_body:
+    # 恶意代码执行
+    '{"(action|command|execute)":\s*"(eval|system|exec|shell|cmd)"}'
+    '{"(payload|code|script)":\s*"(malicious|backdoor|trojan|evil)"}'
+
+  # 攻击链阶段3：持久化
+  request_path:
+    # 持久化机制
+    '/(persistence|backdoor|implant|malware).*(install|create|establish)'
+    '/(registry|startup|service|scheduled).*(task|job).*(create|modify)'
+
+  params:
+    # 持久化技术
+    '(persistence|backdoor|implant).*(install|create|establish|maintain)'
+    '(registry|startup|service).*(create|modify|persist)'
+
+  # 攻击链阶段4：权限提升
+  request_headers:
+    # 权限提升特征
+    '(X-Privilege|X-Escalation):\s*(attempt|success|failure)'
+    '(X-Mitre-Technique):\s*(T1068|T1548|T1055)'  # 已知权限提升技术
+
+  params:
+    # 权限提升尝试
+    '(privilege|escalate|elevate|bypass).*(UAC|sudo|admin|root)'
+    '(exploit|vulnerability).*(privilege|escalation|elevation)'
+
+  # 攻击链阶段5：防御绕过
+  request_body:
+    # 防御绕过技术
+    '{"(disable|bypass|turn.*off).*(security|protection|antivirus|firewall)"}'
+    '{"(hide|stealth|evade).*(detection|analysis|monitoring)"}'
+
+  params:
+    # 防御绕过尝试
+    '(disable|bypass|turn.*off).*(security|protection|defense)'
+    '(hide|stealth|evade).*(detection|analysis|monitoring)'
+
+  # 攻击链阶段6：凭据访问
+  request_path:
+    # 凭据窃取
+    '/(credential|password|hash|token).*(dump|steal|extract|harvest)'
+    '/(sam|lsa|ntds|memory).*(dump|extract|access)'
+
+  params:
+    # 凭据访问技术
+    '(credential|password|hash|token).*(dump|steal|extract|harvest)'
+    '(mimikatz|gsecdump|procdump|lsadump).*(tool|technique)'
+
+  # 攻击链阶段7：发现
+  request_headers:
+    # 发现阶段特征
+    '(X-Discovery|X-Reconnaissance):\s*(network|system|user|domain)'
+
+  request_path:
+    # 系统发现
+    '/(scan|enum|discover|probe).*(network|system|port|service)'
+    '/(whoami|netstat|ipconfig|systeminfo).*(command|query)'
+
+  # 攻击链阶段8：横向移动
+  params:
+    # 横向移动技术
+    '(lateral|horizontal|movement|pivot).*(access|move|jump|propagate)'
+    '(pass.*the.*hash|pth|credential).*(theft|reuse|dump|spray)'
+
+  request_path:
+    # 横向移动模式
+    '/(smb|winrm|wmi|rdp|ssh).*(access|connect|login|exploit)'
+    '/(remote|lateral|network).*(access|connection|movement)'
+
+  # 攻击链阶段9：收集
+  request_body:
+    # 数据收集
+    '{"(collect|gather|exfiltrate|steal).*(data|information|files|documents)"}'
+    '{"(stage|staging|collection).*(point|area|location)":\s*"(created|established)"}'
+
+  request_path:
+    # 数据收集模式
+    '/(data|files|documents).*(collect|gather|copy|move|stage)'
+    '/(archive|compress|encrypt).*(collection|staging|preparation)'
+
+  # 攻击链阶段10：命令控制
+  request_headers:
+    # C2通信特征
+    '(X-C2|X-Command|X-Control):\s*(traffic|communication|beacon)'
+    '(X-Mitre-Technique):\s*(T1071|T1105|T1571)'  # 已知C2技术
+
+  params:
+    # C2通信模式
+    '(c2|command.*control|beacon|callback).*(traffic|communication|heartbeat)'
+    '(dns|http|https|icmp).*(tunnel|covert|channel)'
+
+  # 攻击链阶段11：数据渗出
+  request_path:
+    # 数据渗出模式
+    '/(exfiltrate|exfil|leak|steal|export).*(data|files|information)'
+    '/(ftp|sftp|http|https|dns).*(exfiltration|transfer|upload)'
+
+  request_headers:
+    # 渗出特征
+    '(X-Exfiltration|X-Data.*Transfer):\s*(large|bulk|suspicious|unauthorized)'
+
+  # 攻击链关联模式
+  request_body:
+    # 攻击链关联
+    '{"(attack.*chain|kill.*chain|cyber.*kill.*chain)":\s*"(stage|phase|step)"}'
+    '{"(mitre|attack|tactic|technique).*(correlation|mapping|link)":\s*"(identified|detected)"}'
+
+  # 攻击时间窗口关联
+  request_headers:
+    # 时间模式
+    '(X-Attack-Timeline|X-Attack-Window):\s*([0-9]+|[A-Za-z0-9]+)'
+
+  # 攻击者行为模式
+  user_agent:
+    # 攻击工具特征
+    '(cobalt.*strike|metasploit|empire|poshc2|powershell|cmd\.exe)'
+    '(apt|lazarus|fancy.*bear|cozy.*bear).*(tool|malware|backdoor)'
+
+  # 攻击基础设施关联
+  src_ip:
+    # 攻击基础设施
+    '(\d+\.\d+\.\d+\.\d+).*?(c2|malicious|attacker|apt)'
+
+severity: high
+category: attack_chain_correlation
+description: |
+  攻击链关联检测规则，基于MITRE ATT&CK框架的多阶段攻击关联分析：
+
+  **攻击链阶段识别**：
+  - 初始访问(Initial Access)
+  - 执行(Execution)
+  - 持久化(Persistence)
+  - 权限提升(Privilege Escalation)
+  - 防御绕过(Defense Evasion)
+  - 凭据访问(Credential Access)
+  - 发现(Discovery)
+  - 横向移动(Lateral Movement)
+  - 收集(Collection)
+  - 命令控制(Command and Control)
+  - 数据渗出(Exfiltration)
+
+  **MITRE ATT&CK映射**：
+  - 战术(Tactic)识别
+  - 技术(Technique)映射
+  - 子技术(Sub-technique)关联
+  - 攻击模式模式识别
+
+  **攻击链关联分析**：
+  - 多阶段攻击关联
+  - 攻击时间窗口分析
+  - 攻击者行为模式识别
+  - 攻击基础设施关联
+
+  **威胁狩猎支持**：
+  - 已知攻击模式检测
+  - 异常行为序列识别
+  - 攻击指标关联
+  - 威胁情报整合
+
+  **事件关联**：
+  - 跨事件关联分析
+  - 时间序列关联
+  - 实体关系映射
+  - 攻击路径重建
+
+cwe: "CWE-20"
+references:
+  - "https://attack.mitre.org/"
+  - "https://www.lockheedmartin.com/en-us/capabilities/cyber/cyber-kill-chain.html"
+  - "https://www.sans.org/white-papers/36659/"
+attack_patterns:
+  - "多阶段攻击"
+  - "APT攻击"
+  - "高级持续性威胁"
+  - "零日攻击链"
+response_codes: [200, 201, 301, 302, 400, 401, 403, 404, 500, 502, 503]
+threat_level: "high"
+impact: "可能表示复杂的APT攻击或高级持续性威胁，需要立即响应"
+
+# 攻击链配置配置
+attack_chain_config:
+  enable_stage_correlation: true
+  mitre_attack_mapping: true
+  timeline_analysis: true
+  attack_path_reconstruction: true
+
+# MITRE ATT&CK配置
+mitre_config:
+  tactic_mapping: true
+  technique_mapping: true
+  sub_technique_analysis: true
+  procedure_example_matching: true
+
+# 关联分析配置
+correlation_config:
+  event_correlation: true
+  time_window_analysis: true
+  entity_relationship_mapping: true
+  attack_pattern_matching: true
+
+# 威胁狩猎配置
+threat_hunting_config:
+  known_attack_patterns: true
+  anomaly_detection: true
+  threat_intelligence_integration: true
+  automated_hypothesis_generation: true

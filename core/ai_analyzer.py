@@ -260,8 +260,6 @@ class AIAnalyzer:
         # 默认使用通用提示词
         return base_framework.format(log_context=log_context)
 
-    @performance_monitor(name="ai_analysis", unit="s")
-    @error_rate_monitor(window_size=10)
     def analyze_log(self, log_context: str, attack_category: str = None, attack_name: str = None, threat_score: float = None) -> str:
         """增强的AI分析 - 支持攻击类型特定的深度分析"""
         if not log_context or not log_context.strip():

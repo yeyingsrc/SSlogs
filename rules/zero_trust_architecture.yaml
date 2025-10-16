@@ -1,0 +1,172 @@
+name: 零信任架构安全检测
+pattern:
+  # 身份验证绕过检测
+  request_headers:
+    # 异常认证绕过
+    '(X-Auth|X-Login|X-Token):\s*(bypass|skip|override|none|NULL)'
+    '(Authorization):\s*(Basic\s*[A-Za-z0-9+/]{20,}={0,2})'  # 弱密码Base64
+    '(X-Forwarded-User|X-Remote-User):\s*(admin|root|administrator)'
+
+  # 多因子认证绕过
+  params:
+    # MFA绕过尝试
+    '(mfa|2fa|totp|otp|second.*factor).*(bypass|disable|skip|override)'
+    '(verification|validate|confirm).*(skip|bypass|auto|instant)'
+    '(device|phone|email).*(trust|bypass|whitelist|skip)'
+
+  # 设备信任异常
+  request_headers:
+    # 设备指纹异常
+    '(X-Device|X-Fingerprint|X-Hardware):.*?(changed|new|unknown|untrusted)'
+    '(X-Platform|X-OS|X-Browser):.*?(unknown|anonymized|hidden)'
+    '(X-Mobile|X-Device-Type):\s*(rooted|jailbroken|compromised)'
+
+  # 权限提升检测
+  params:
+    # 权限提升尝试
+    '(role|permission|privilege|access).*(escalate|elevate|increase|upgrade)'
+    '(admin|root|super|sudo).*(access|login|privilege|role)'
+    '(user|account).*(impersonate|switch|takeover|hijack)'
+
+  # 会话安全检测
+  request_headers:
+    # 会话劫持尝试
+    '(X-Session|X-Token|X-JWT):.*?(steal|hijack|reuse|share)'
+    '(Cookie):\s*(JSESSIONID|PHPSESSID|ASP.NET_SessionId).*?(multiple|shared|stolen)'
+    '(X-Real-IP|X-Forwarded-For):.*?(spoof|fake|anonymized|proxy)'
+
+  # 访问控制绕过
+  request_path:
+    # 访问控制绕过
+    '/(admin|management|control|config)/.*?(bypass|skip|override|direct)'
+    '/(api|service)/.*?(auth|login|verify).*(bypass|disable|none)'
+    '/(user|account|profile)/.*?(force|override|admin)'
+
+  # 网络段访问异常
+  src_ip:
+    # 跨网段访问
+    '(192\.168\.\d+\.\d+).*?(10\.\d+\.\d+\.\d+|172\.\d+\.\d+\.\d+)'  # 内网跨段
+    '(10\.\d+\.\d+\.\d+).*?(192\.168\.\d+\.\d+|172\.\d+\.\d+\.\d+)'
+    '(172\.\d+\.\d+\.\d+).*?(192\.168\.\d+\.\d+|10\.\d+\.\d+\.\d+)'
+
+  # 异常地理位置访问
+  request_headers:
+    # 地理位置异常
+    '(X-Country|X-GeoIP|X-Location):\s*(CN|RU|KP|IR|AF).*?(US|EU|UK|CA|AU)'  # 跨国访问
+    '(X-Timezone|X-Zone):\s*(UTC\+8|UTC\+5:30).*?(UTC\-5|UTC\+0|UTC\+1)'  # 跨时区
+
+  # 服务访问异常
+  request_path:
+    # 服务间访问异常
+    '/(internal|private|service)/.*?(external|public|internet)'
+    '/(microservice|api)/.*?(direct|bypass|gateway|skip)'
+
+  # 身份验证异常
+  params:
+    # 认证失败模式
+    '(login|auth|signin).*(fail|error|invalid|denied).*(multiple|repeat|brute)'
+    '(password|pass|pwd).*(reset|recover|change).*(multiple|bulk|admin)'
+    '(account|user).*(lock|suspend|disable).*(bypass|override|force)'
+
+  # 信任评估异常
+  request_body:
+    # 信任评分异常
+    '{"(trust|risk|score|confidence)":\s*"(low|high|critical|dangerous)"}'
+    '{"(access|permission|grant)":\s*"(auto|instant|bypass|skip)"}'
+    '{"(verify|validate|check)":\s*"(false|skip|disabled|none)"}'
+
+  # 环境上下文异常
+  request_headers:
+    # 环境异常
+    '(X-Environment|X-Context):\s*(unknown|untrusted|public|external)'
+    '(X-Network|X-Segment):\s*(untrusted|guest|public|dmz)'
+
+severity: high
+category: zero_trust
+description: |
+  零信任架构安全检测规则，实施"永不信任，始终验证"原则：
+
+  **身份验证安全**：
+  - 多因子认证绕过检测
+  - 弱认证机制识别
+  - 身份验证异常模式
+  - 认证流程完整性检查
+
+  **设备信任验证**：
+  - 设备指纹异常检测
+  - 未知/不受信任设备识别
+  - Root/Jailbreak设备检测
+  - 设备完整性验证
+
+  **访问控制强化**：
+  - 权限提升尝试检测
+  - 访问控制绕过识别
+  - 越权访问模式分析
+  - 最小权限原则验证
+
+  **网络微分段**：
+  - 跨网段访问检测
+  - 网络段隔离验证
+  - 东西向流量监控
+  - 微服务访问控制
+
+  **上下文感知**：
+  - 地理位置异常检测
+  - 时间模式异常分析
+  - 行为基线偏离检测
+  - 环境上下文验证
+
+  **持续验证**：
+  - 会话安全持续监控
+  - 信任评分动态调整
+  - 异常行为实时检测
+  - 自适应访问控制
+
+cwe: "CWE-287"
+references:
+  - "https://csrc.nist.gov/publications/detail/sp/800-207/final"
+  - "https://www.forrester.com/report/The-Zero-Trust-Extending-Ecosystem/RES169063"
+  - "https://owasp.org/www-project-application-security-verification-standard/"
+attack_patterns:
+  - "身份验证绕过"
+  - "权限提升"
+  - "会话劫持"
+  - "访问控制绕过"
+response_codes: [200, 201, 301, 302, 400, 401, 403, 404, 500]
+threat_level: "high"
+impact: "违反零信任原则，可能导致未授权访问、数据泄露或系统控制"
+
+# 零信任配置
+zero_trust_config:
+  enable_continuous_verification: true
+  trust_score_threshold: 0.7
+  session_monitoring: true
+  device_verification: true
+
+# 身份验证配置
+authentication_config:
+  mfa_required: true
+  password_complexity: true
+  biometric_verification: true
+  certificate_verification: true
+
+# 访问控制配置
+access_control_config:
+  principle_of_least_privilege: true
+  micro_segmentation: true
+  dynamic_authorization: true
+  context_aware_access: true
+
+# 网络安全配置
+network_config:
+  micro_segments: true
+  east_west_traffic_monitoring: true
+  network_policies_enforcement: true
+  encrypted_communication: true
+
+# 设备信任配置
+device_trust_config:
+  device_fingerprinting: true
+  integrity_verification: true
+  compliance_checking: true
+  anomaly_detection: true

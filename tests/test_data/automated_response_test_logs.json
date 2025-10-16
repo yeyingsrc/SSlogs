@@ -1,0 +1,45 @@
+[
+  {
+    "timestamp": "2024-01-15T18:00:00+08:00",
+    "src_ip": "192.168.1.210",
+    "request_method": "POST",
+    "request_path": "/api/firewall/block/ip",
+    "http_version": "HTTP/1.1",
+    "status_code": "200",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)",
+    "request_headers": {
+      "X-Block": "true",
+      "X-Block-IP": "192.168.1.210",
+      "X-Block-Duration": "3600",
+      "X-Block-Reason": "attack"
+    }
+  },
+  {
+    "timestamp": "2024-01-15T18:05:00+08:00",
+    "src_ip": "192.168.1.211",
+    "request_method": "POST",
+    "request_path": "/api/security/isolate/system",
+    "http_version": "HTTP/1.1",
+    "status_code": "200",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)",
+    "request_body": "{\"isolate\": \"true\", \"quarantine\": \"activate\", \"malware\": \"detected\", \"container\": \"sandbox\"}",
+    "request_headers": {
+      "X-Quarantine-Trigger": "malware_detected"
+    }
+  },
+  {
+    "timestamp": "2024-01-15T18:10:00+08:00",
+    "src_ip": "192.168.1.212",
+    "request_method": "POST",
+    "request_path": "/api/security/alert/escalate",
+    "http_version": "HTTP/1.1",
+    "status_code": "200",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)",
+    "request_body": "{\"incident\": \"create\", \"event\": \"open\", \"automation\": \"true\"}",
+    "request_headers": {
+      "X-Alert-Escalate": "true",
+      "X-Severity-Upgrade": "critical",
+      "X-Escalation-Reason": "APT_attack"
+    }
+  }
+]

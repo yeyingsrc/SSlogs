@@ -1,5 +1,52 @@
-name: 远程代码执行(RCE)检测
-pattern: '(eval\(|exec\(|system\(|shell_exec\(|passthru\(|proc_open\(|popen\(|assert\()'
-severity: high
+name: 远程代码执行(RCE)检测 (增强版)
+pattern:
+  # PHP代码执行函数
+  params: '(eval\s*\(|assert\s*\(|create_function\s*\(|preg_replace\s*\/.*\/e|call_user_func\s*\(|call_user_func_array\s*\()'
+
+  # 系统命令执行函数
+  params: '(system\s*\(|shell_exec\s*\(|passthru\s*\(|exec\s*\(|pcntl_exec\s*\()'
+
+  # 进程控制函数
+  params: '(proc_open\s*\(|popen\s*\(|pipe\s*\(|`[^`]*`)\s*\()'
+
+  # 文件包含/代码注入
+  params: '(include\s*\(|require\s*\(|include_once\s*\(|require_once\s*\()'
+
+  # 反序列化攻击
+  params: '(unserialize\s*\(|serializ[A-Za-z]*\s*\(|O:\d+:\"\w+\"|a:\d+:\{)'
+
+  # 变量函数和动态调用
+  params: '(\$\w+\s*\(|\$\{\w+\}|\\x[0-9a-fA-F]{2}|chr\s*\(|ord\s*\()'
+
+  # WebShell特征
+  params: '(webshell|backdoor|c99|r57|wso|b374k|冰蝎|哥斯拉|菜刀)'
+
+  # 编码绕过
+  decoded_params: '(eval|exec|system|shell_exec|passthru|assert|create_function).*(base64_decode|rot13|str_rot13|gzuncompress|gzinflate|strrev)'
+
+severity: critical
 category: rce
-description: 检测常见的远程代码执行攻击模式，包括代码执行函数调用
+description: |
+  增强版远程代码执行检测，覆盖多种攻击向量：
+  - PHP/Python/Node.js 代码执行
+  - 系统命令执行
+  - 进程控制和管道
+  - 文件包含和代码注入
+  - 反序列化攻击
+  - WebShell后门
+  - 动态函数调用
+  - 编码绕过技术
+
+cwe: "CWE-94"
+references:
+  - "https://owasp.org/www-project-top-ten/2017/A1_2017-Injection"
+  - "https://www.php.net/manual/en/security.errors.php"
+attack_patterns:
+  - "代码注入"
+  - "命令注入"
+  - "文件包含"
+  - "反序列化"
+  - "WebShell"
+response_codes: [200, 403, 500, 502]
+threat_level: "critical"
+impact: "可能导致系统完全妥协、数据窃取或横向移动"

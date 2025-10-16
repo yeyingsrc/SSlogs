@@ -1,0 +1,31 @@
+[
+  {
+    "timestamp": "2024-01-15T14:00:00+08:00",
+    "src_ip": "10.244.0.1",
+    "request_method": "POST",
+    "request_path": "/apis/rbac.authorization.k8s.io/v1/clusterroles",
+    "http_version": "HTTP/1.1",
+    "status_code": "201",
+    "user_agent": "kubectl/v1.26.0",
+    "request_body": "{\"role\": \"cluster-admin\", \"privilege\": \"escalate\"}"
+  },
+  {
+    "timestamp": "2024-01-15T14:05:00+08:00",
+    "src_ip": "172.17.0.2",
+    "request_method": "POST",
+    "request_path": "/api/container/escape",
+    "http_version": "HTTP/1.1",
+    "status_code": "403",
+    "user_agent": "curl/7.68.0",
+    "request_body": "{\"escape\": \"privileged\", \"mount\": \"host\"}"
+  },
+  {
+    "timestamp": "2024-01-15T14:10:00+08:00",
+    "src_ip": "169.254.169.254",
+    "request_method": "GET",
+    "request_path": "/latest/meta-data/iam/security-credentials",
+    "http_version": "HTTP/1.1",
+    "status_code": "200",
+    "user_agent": "curl/7.68.0"
+  }
+]
