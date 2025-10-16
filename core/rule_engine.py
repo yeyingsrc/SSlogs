@@ -8,6 +8,7 @@ from typing import List, Dict, Any, Tuple, Optional
 from urllib.parse import unquote, parse_qs
 from collections import defaultdict
 from dataclasses import dataclass
+import asyncio
 
 @dataclass
 class ThreatScore:
@@ -19,11 +20,24 @@ class ThreatScore:
     risk_factors: List[str]
 
 class RuleEngine:
-    def __init__(self, rule_dir: str):
+    def __init__(self, rule_dir: str, enable_ai_analysis: bool = False):
         self.logger = logging.getLogger(__name__)
         self.rules = []
         self.compiled_rules = {}  # 预编译规则缓存
         self.rule_stats = defaultdict(int)  # 规则匹配统计
+        self.enable_ai_analysis = enable_ai_analysis
+        self.ai_analyzer = None
+
+        # 延迟导入AI分析器以避免循环依赖
+        if enable_ai_analysis:
+            try:
+                from core.ai_threat_analyzer import get_ai_threat_analyzer
+                self.ai_analyzer = get_ai_threat_analyzer()
+                self.logger.info("AI威胁分析已启用")
+            except Exception as e:
+                self.logger.warning(f"AI威胁分析初始化失败: {e}")
+                self.enable_ai_analysis = False
+
         self._load_rules(rule_dir)
         self._compile_rules()
 
@@ -474,7 +488,7 @@ class RuleEngine:
     def get_rule_statistics(self) -> Dict[str, Any]:
         """获取规则匹配统计"""
         total_matches = sum(self.rule_stats.values())
-        return {
+        stats = {
             'total_rules': len(self.rules),
             'total_matches': total_matches,
             'rule_match_counts': dict(self.rule_stats),
@@ -484,3 +498,283 @@ class RuleEngine:
                 reverse=True
             )[:10]
         }
+
+        # 添加AI分析状态
+        if self.enable_ai_analysis and self.ai_analyzer:
+            stats['ai_analysis'] = self.ai_analyzer.get_analyzer_status()
+
+        return stats
+
+    def match_log_with_ai(self, log_entry: Dict[str, Any]) -> List[Dict[str, Any]]:
+        """带AI增强的规则匹配"""
+        # 首先执行传统规则匹配
+        traditional_matches = self.match_log(log_entry)
+
+        # 如果AI分析不可用，直接返回传统匹配结果
+        if not self.enable_ai_analysis or not self.ai_analyzer:
+            return traditional_matches
+
+        try:
+            # 提取匹配的规则名称
+            matched_rule_names = [match['rule']['name'] for match in traditional_matches]
+
+            # 执行AI分析
+            ai_result = self.ai_analyzer.analyze_log_entry(log_entry, matched_rule_names)
+
+            if ai_result:
+                # 将AI分析结果整合到匹配结果中
+                enhanced_matches = []
+
+                for match in traditional_matches:
+                    enhanced_match = match.copy()
+
+                    # 添加AI分析信息
+                    enhanced_match['ai_analysis'] = {
+                        'is_malicious': ai_result.is_malicious,
+                        'ai_threat_level': ai_result.threat_analysis.threat_level,
+                        'ai_attack_types': ai_result.threat_analysis.attack_types,
+                        'ai_confidence': ai_result.confidence_score,
+                        'ai_recommendations': ai_result.threat_analysis.recommendations,
+                        'ai_analysis_summary': ai_result.threat_analysis.analysis_summary,
+                        'ai_processing_time': ai_result.processing_time,
+                        'model_used': ai_result.model_used
+                    }
+
+                    # 如果AI分析认为是恶意的，提高威胁评分
+                    if ai_result.is_malicious:
+                        # 调整威胁评分，融合AI分析结果
+                        original_score = enhanced_match['threat_score'].score
+                        ai_score = ai_result.threat_analysis.threat_score
+
+                        # 加权平均：AI权重0.4，规则权重0.6
+                        blended_score = original_score * 0.6 + ai_score * 0.4
+
+                        # 更新威胁评分
+                        enhanced_match['threat_score'].score = blended_score
+
+                        # 根据AI分析调整严重级别
+                        if ai_result.threat_analysis.threat_level == '严重' and enhanced_match['threat_score'].severity != 'critical':
+                            enhanced_match['threat_score'].severity = 'critical'
+                        elif ai_result.threat_analysis.threat_level == '高' and enhanced_match['threat_score'].severity == 'low':
+                            enhanced_match['threat_score'].severity = 'high'
+
+                    enhanced_matches.append(enhanced_match)
+
+                # 如果AI检测到威胁但传统规则没有匹配，创建AI专用匹配项
+                if ai_result.is_malicious and not traditional_matches:
+                    ai_match = {
+                        'rule': {
+                            'name': 'AI威胁检测',
+                            'category': 'ai_detection',
+                            'description': '基于AI模型的智能威胁检测',
+                            'severity': ai_result.threat_analysis.threat_level.lower(),
+                            'source': 'ai_analysis'
+                        },
+                        'log_entry': log_entry,
+                        'threat_score': ThreatScore(
+                            score=ai_result.threat_analysis.threat_score,
+                            severity=ai_result.threat_analysis.threat_level.lower(),
+                            confidence=ai_result.confidence_score,
+                            attack_vectors=ai_result.threat_analysis.attack_types,
+                            risk_factors=ai_result.threat_analysis.risk_factors
+                        ),
+                        'match_details': {
+                            'matched_fields': ['ai_analysis'],
+                            'ai_detected': True
+                        },
+                        'rule_id': 'ai_detection',
+                        'timestamp': time.time(),
+                        'ai_analysis': {
+                            'is_malicious': ai_result.is_malicious,
+                            'ai_threat_level': ai_result.threat_analysis.threat_level,
+                            'ai_attack_types': ai_result.threat_analysis.attack_types,
+                            'ai_confidence': ai_result.confidence_score,
+                            'ai_recommendations': ai_result.threat_analysis.recommendations,
+                            'ai_analysis_summary': ai_result.threat_analysis.analysis_summary,
+                            'ai_processing_time': ai_result.processing_time,
+                            'model_used': ai_result.model_used,
+                            'pure_ai_detection': True
+                        }
+                    }
+                    enhanced_matches.append(ai_match)
+
+                return enhanced_matches
+            else:
+                # AI分析失败，返回传统匹配结果
+                self.logger.warning("AI分析失败，使用传统规则匹配结果")
+                return traditional_matches
+
+        except Exception as e:
+            self.logger.error(f"AI增强匹配失败: {e}")
+            return traditional_matches
+
+    async def match_log_with_ai_async(self, log_entry: Dict[str, Any]) -> List[Dict[str, Any]]:
+        """异步AI增强规则匹配"""
+        # 首先执行传统规则匹配
+        traditional_matches = self.match_log(log_entry)
+
+        # 如果AI分析不可用，直接返回传统匹配结果
+        if not self.enable_ai_analysis or not self.ai_analyzer:
+            return traditional_matches
+
+        try:
+            # 提取匹配的规则名称
+            matched_rule_names = [match['rule']['name'] for match in traditional_matches]
+
+            # 执行异步AI分析
+            ai_result = await self.ai_analyzer.analyze_log_entry_async(log_entry, matched_rule_names)
+
+            if ai_result:
+                # 将AI分析结果整合到匹配结果中（与同步版本相同的逻辑）
+                enhanced_matches = []
+
+                for match in traditional_matches:
+                    enhanced_match = match.copy()
+
+                    # 添加AI分析信息
+                    enhanced_match['ai_analysis'] = {
+                        'is_malicious': ai_result.is_malicious,
+                        'ai_threat_level': ai_result.threat_analysis.threat_level,
+                        'ai_attack_types': ai_result.threat_analysis.attack_types,
+                        'ai_confidence': ai_result.confidence_score,
+                        'ai_recommendations': ai_result.threat_analysis.recommendations,
+                        'ai_analysis_summary': ai_result.threat_analysis.analysis_summary,
+                        'ai_processing_time': ai_result.processing_time,
+                        'model_used': ai_result.model_used
+                    }
+
+                    # 如果AI分析认为是恶意的，提高威胁评分
+                    if ai_result.is_malicious:
+                        original_score = enhanced_match['threat_score'].score
+                        ai_score = ai_result.threat_analysis.threat_score
+                        blended_score = original_score * 0.6 + ai_score * 0.4
+
+                        enhanced_match['threat_score'].score = blended_score
+
+                        if ai_result.threat_analysis.threat_level == '严重' and enhanced_match['threat_score'].severity != 'critical':
+                            enhanced_match['threat_score'].severity = 'critical'
+                        elif ai_result.threat_analysis.threat_level == '高' and enhanced_match['threat_score'].severity == 'low':
+                            enhanced_match['threat_score'].severity = 'high'
+
+                    enhanced_matches.append(enhanced_match)
+
+                # 如果AI检测到威胁但传统规则没有匹配，创建AI专用匹配项
+                if ai_result.is_malicious and not traditional_matches:
+                    ai_match = {
+                        'rule': {
+                            'name': 'AI威胁检测',
+                            'category': 'ai_detection',
+                            'description': '基于AI模型的智能威胁检测',
+                            'severity': ai_result.threat_analysis.threat_level.lower(),
+                            'source': 'ai_analysis'
+                        },
+                        'log_entry': log_entry,
+                        'threat_score': ThreatScore(
+                            score=ai_result.threat_analysis.threat_score,
+                            severity=ai_result.threat_analysis.threat_level.lower(),
+                            confidence=ai_result.confidence_score,
+                            attack_vectors=ai_result.threat_analysis.attack_types,
+                            risk_factors=ai_result.threat_analysis.risk_factors
+                        ),
+                        'match_details': {
+                            'matched_fields': ['ai_analysis'],
+                            'ai_detected': True
+                        },
+                        'rule_id': 'ai_detection',
+                        'timestamp': time.time(),
+                        'ai_analysis': {
+                            'is_malicious': ai_result.is_malicious,
+                            'ai_threat_level': ai_result.threat_analysis.threat_level,
+                            'ai_attack_types': ai_result.threat_analysis.attack_types,
+                            'ai_confidence': ai_result.confidence_score,
+                            'ai_recommendations': ai_result.threat_analysis.recommendations,
+                            'ai_analysis_summary': ai_result.threat_analysis.analysis_summary,
+                            'ai_processing_time': ai_result.processing_time,
+                            'model_used': ai_result.model_used,
+                            'pure_ai_detection': True
+                        }
+                    }
+                    enhanced_matches.append(ai_match)
+
+                return enhanced_matches
+            else:
+                self.logger.warning("异步AI分析失败，使用传统规则匹配结果")
+                return traditional_matches
+
+        except Exception as e:
+            self.logger.error(f"异步AI增强匹配失败: {e}")
+            return traditional_matches
+
+    def analyze_with_ai(self, log_entry: Dict[str, Any], rule_name: str, threat_score: float) -> Optional[str]:
+        """使用AI解释规则匹配"""
+        if not self.enable_ai_analysis or not self.ai_analyzer:
+            return None
+
+        try:
+            explanation = self.ai_analyzer.explain_detection(rule_name, log_entry, threat_score)
+            return explanation
+        except Exception as e:
+            self.logger.error(f"AI解释失败: {e}")
+            return None
+
+    def natural_language_query(self, query: str, log_data: List[Dict[str, Any]] = None) -> Optional[str]:
+        """自然语言查询接口"""
+        if not self.enable_ai_analysis or not self.ai_analyzer:
+            return "AI分析功能未启用"
+
+        try:
+            response = self.ai_analyzer.natural_language_query(query, log_data)
+            return response
+        except Exception as e:
+            self.logger.error(f"自然语言查询失败: {e}")
+            return f"查询失败: {str(e)}"
+
+    def get_ai_recommendations(self, log_entry: Dict[str, Any], rule_matches: List[Dict[str, Any]]) -> List[str]:
+        """获取AI生成的安全建议"""
+        if not self.enable_ai_analysis or not self.ai_analyzer:
+            return ["AI分析功能未启用"]
+
+        try:
+            # 查找AI分析结果
+            ai_analysis = None
+            for match in rule_matches:
+                if 'ai_analysis' in match:
+                    ai_analysis = match['ai_analysis']
+                    break
+
+            if ai_analysis and ai_analysis.get('ai_recommendations'):
+                return ai_analysis['ai_recommendations']
+
+            # 如果没有找到AI分析结果，执行新的分析
+            matched_rule_names = [match['rule']['name'] for match in rule_matches]
+            ai_result = self.ai_analyzer.analyze_log_entry(log_entry, matched_rule_names)
+
+            if ai_result:
+                return self.ai_analyzer.get_security_recommendations(ai_result)
+
+            return ["无法生成AI建议"]
+
+        except Exception as e:
+            self.logger.error(f"获取AI建议失败: {e}")
+            return [f"建议生成失败: {str(e)}"]
+
+    def enable_ai_support(self) -> bool:
+        """启用AI支持"""
+        if self.enable_ai_analysis:
+            return True
+
+        try:
+            from core.ai_threat_analyzer import get_ai_threat_analyzer
+            self.ai_analyzer = get_ai_threat_analyzer()
+            self.enable_ai_analysis = True
+            self.logger.info("AI威胁分析已启用")
+            return True
+        except Exception as e:
+            self.logger.error(f"启用AI支持失败: {e}")
+            return False
+
+    def disable_ai_support(self):
+        """禁用AI支持"""
+        self.enable_ai_analysis = False
+        self.ai_analyzer = None
+        self.logger.info("AI威胁分析已禁用")
