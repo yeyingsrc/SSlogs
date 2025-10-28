@@ -1,10 +1,21 @@
-# 🔍 SSlogs v3.0 - 智能安全日志分析平台
+# 🔍 SSlogs v3.1 - 智能安全日志分析平台
+
+[![Python Version](https://img.shields.io/badge/python-3.8+-blue.svg)](https://python.org)
+[![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
+[![Platform](https://img.shields.io/badge/platform-Windows%20%7C%20Linux%20%7C%20macOS-lightgrey.svg)]()
+[![AI Powered](https://img.shields.io/badge/AI-Powered-orange.svg)]()
 
 > **企业级威胁检测与智能安全分析系统**
 
 一个功能强大的智能安全日志分析平台，集成了**多阶段规则引擎**、**AI威胁分析**、**云原生安全检测**和**实时性能监控**，专为现代安全运营中心(SOC)和应急响应团队设计。
 
-## 🚀 v3.0 重大更新亮点
+## 🚀 最新版本 v3.1
+
+### 🆕 **LM Studio 集成支持**
+- 🤖 **本地AI模型支持** - 完全兼容 LM Studio，支持本地运行的开源大语言模型
+- 🔧 **灵活模型切换** - 在云端 DeepSeek 和本地 LM Studio 之间自由切换
+- 📊 **增强模型管理** - 自动检测可用模型，支持模型测试和配置验证
+- 🛡️ **隐私保护增强** - 本地分析确保敏感日志数据不出网
 
 ### 🎯 **检测能力大幅提升**
 - **65%检测覆盖率提升** - 新增20+现代威胁检测规则
@@ -22,6 +33,21 @@
 - **云原生安全** - Kubernetes、Docker、容器逃逸检测
 - **供应链攻击** - 现代软件供应链威胁识别
 
+## 📋 目录
+
+- [✨ 核心特性](#-核心特性)
+- [🏗️ 系统架构](#️-系统架构)
+- [🚀 快速开始](#-快速开始)
+- [🖥️ 使用方法](#️-使用方法)
+- [⚙️ 配置说明](#️-配置说明)
+- [🛡️ 安全规则](#️-安全规则)
+- [📊 分析报告](#-分析报告)
+- [🧪 测试验证](#-测试验证)
+- [📁 项目结构](#-项目结构)
+- [🤝 贡献指南](#-贡献指南)
+- [📄 许可证](#-许可证)
+- [🔄 更新日志](#-更新日志)
+
 ## ✨ 核心特性
 
 ### 🧠 **智能检测引擎**
@@ -36,6 +62,8 @@
 - 🧩 **备用分析机制** - AI不可用时自动启用结构化分析
 - 📈 **威胁情报关联** - 攻击者特征、组织归属、后续威胁评估
 - ⚡ **性能优化** - 智能缓存和批处理提升AI分析效率
+- 🔧 **LM Studio 集成** - 支持本地运行的开源大语言模型，完全隐私保护
+- 🌐 **多模型支持** - 兼容 DeepSeek、Ollama、LM Studio 等多种AI服务
 
 ### ⚡ **高性能处理**
 - 🚀 **规则预编译系统** - 启动时预编译所有规则，匹配速度提升40%
@@ -99,12 +127,35 @@
    mv GeoLite2-Country.mmdb config/
    ```
 
-4. **配置API密钥**
-   
-   编辑 `config.yaml` 文件：
+4. **配置AI服务** (三选一)
+
+   **选项一：使用云端 DeepSeek (推荐)**
    ```yaml
    deepseek:
      api_key: "your-api-key-here"  # 替换为实际API密钥
+   ai:
+     type: "cloud"
+     cloud_provider: "deepseek"
+   ```
+
+   **选项二：使用本地 Ollama**
+   ```yaml
+   ai:
+     type: "local"
+     local_provider: "ollama"
+   ollama:
+     model: "deepseek-r1:14b"
+     base_url: "http://localhost:11434/api/chat"
+   ```
+
+   **选项三：使用 LM Studio (v3.1新增)**
+   ```yaml
+   ai:
+     type: "local"
+     local_provider: "lm_studio"
+   lm_studio:
+     base_url: "http://localhost:1234/v1/chat/completions"
+     model: "auto"  # 自动检测可用模型
    ```
 
 ## 🖥️ 使用方法
@@ -132,6 +183,9 @@ python main.py --generate-rules "192.168.1.1 [10/Oct/2023:13:55:36] \"GET /index
 ```bash
 # 启动PyQt6图形用户界面
 python launcher.py --gui
+
+# 启动支持LM Studio的GUI界面
+python launcher.py --gui --lm-studio
 ```
 
 如果遇到GUI依赖问题，请先安装PyQt6：
@@ -154,8 +208,10 @@ PyQt6 GUI模式提供了更现代化、功能丰富的操作体验，包含以�
 - 📁 输出报告保存位置选择
 - 📄 报告格式选项（HTML、JSON、TXT）
 - 💬 实时分析日志输出
+- 🤖 **v3.1新增**: LM Studio模型选择和测试
+- 🔧 **v3.1新增**: AI服务连接测试功能
 
-## 📖 使用方法
+## ⚙️ 配置说明
 
 ### 基本用法
 
@@ -171,6 +227,9 @@ python main.py --config config.yaml --ai --server-ip 192.168.1.100
 
 # 从日志样例自动生成解析规则
 python main.py --generate-rules "192.168.1.1 [10/Oct/2023:13:55:36] \"GET /index.php HTTP/1.1\" 200 1234"
+
+# v3.1新增：使用LM Studio进行本地AI分析
+python main.py --config config.yaml --ai --lm-studio
 ```
 
 #### 🔧 主机IP配置说明
@@ -248,7 +307,17 @@ ollama:
   base_url: "http://localhost:11434/api/chat"
 ```
 
-#### 4. 性能优化配置
+#### 4. LM Studio 配置 (v3.1新增)
+```yaml
+lm_studio:
+  base_url: "http://localhost:1234/v1/chat/completions"  # LM Studio API地址
+  model: "auto"                                        # 自动检测模型或指定模型名
+  timeout: 60                                          # 请求超时时间
+  max_tokens: 2048                                     # 最大令牌数
+  temperature: 0.7                                     # 创造性参数
+```
+
+#### 5. 性能优化配置
 ```yaml
 analysis:
   batch_size: 1000        # 批处理大小
@@ -258,13 +327,19 @@ analysis:
 
 ## 🛡️ 安全规则
 
-工具内置了40+个安全检测规则，涵盖：
+工具内置了75+个安全检测规则，涵盖：
 
 - **注入攻击**: SQL注入、NoSQL注入、LDAP注入
 - **跨站攻击**: XSS、CSRF、SSRF
 - **文件攻击**: 路径遍历、文件包含、文件上传
 - **扫描检测**: 目录扫描、漏洞扫描、工具识别
 - **其他威胁**: WebShell、暴力破解、协议攻击
+- **云原生威胁**: Kubernetes、Docker、容器逃逸 (v3.0新增)
+- **API安全**: GraphQL注入、REST API滥用 (v3.0新增)
+- **现代漏洞**: Log4j、Spring4Shell等0-day检测 (v3.0新增)
+- **供应链攻击**: 恶意依赖、镜像投毒 (v3.0新增)
+- **AI/ML威胁**: 模型投毒、对抗性攻击 (v3.1新增)
+- **Web3安全**: 智能合约攻击、区块链威胁 (v3.1新增)
 
 ### 自定义规则
 
@@ -436,7 +511,32 @@ A: 验证规则语法，检查正则表达式，启用调试日志查看详情
 
 ## 🔄 更新日志
 
-### v3.0.0 (最新) - 重大架构升级 🚀
+### v3.1.0 (最新) - LM Studio 集成与AI生态扩展 🤖
+
+#### 🆕 **LM Studio 完整集成**
+- ✨ **本地AI模型支持** - 完全兼容 LM Studio，支持本地运行的开源大语言模型
+- 🔧 **智能模型检测** - 自动发现和测试可用的本地模型
+- 🌐 **统一AI接口** - 在云端 DeepSeek、Ollama 和 LM Studio 之间无缝切换
+- 🛡️ **隐私保护增强** - 本地分析确保敏感日志数据不出网
+- 🎯 **模型配置优化** - 支持自动和手动模型选择配置
+
+#### 📊 **GUI界面增强**
+- 🖥️ **LM Studio 集成界面** - 图形化支持 LM Studio 模型管理
+- 🧪 **AI连接测试工具** - 一键测试AI服务连接状态
+- 📱 **响应式界面优化** - 改进用户交互体验
+- 🔧 **配置向导增强** - 简化AI服务配置流程
+
+#### 🛡️ **安全规则扩展**
+- 🤖 **AI/ML威胁检测** - 新增模型投毒、对抗性攻击检测规则
+- 🔗 **Web3安全规则** - 智能合约攻击、区块链威胁识别
+- 📈 **威胁情报增强** - 更全面的攻击特征库
+
+#### ⚡ **性能与稳定性**
+- 🚀 **AI响应优化** - 改进本地AI模型的响应速度
+- 🔄 **错误恢复机制** - 增强AI服务不可用时的降级处理
+- 📊 **资源使用优化** - 更高效的内存和CPU管理
+
+### v3.0.0 - 重大架构升级 🚀
 
 #### 🎯 **检测能力革命性提升**
 - ✨ **65%检测覆盖率提升** - 新增20+现代威胁检测规则
@@ -511,6 +611,37 @@ A: 验证规则语法，检查正则表达式，启用调试日志查看详情
 - 🔍 **测试AI功能**: 新增测试AI连接按钮，验证配置是否正确
 - 📝 **模型配置优化**: 支持自定义模型名称和API密钥输入
 
+## 🌟 为什么选择 SSlogs？
+
+- 🚀 **开箱即用** - 简单配置即可开始分析，支持多种日志格式
+- 🎯 **精准检测** - 75+专业安全规则，减少误报和漏报
+- 🤖 **AI增强** - 智能威胁分析，提供专业的安全建议
+- 🌐 **多模型支持** - 支持云端和本地AI，满足不同隐私需求
+- 📊 **可视化报告** - 现代化HTML报告，直观展示威胁态势
+- ⚡ **高性能** - 优化的批处理引擎，支持大规模日志分析
+- 🛡️ **持续更新** - 跟进最新威胁情报，定期更新检测规则
+
+## 🚀 立即开始
+
+```bash
+# 1. 克隆项目
+git clone https://github.com/yourusername/SSlogs.git
+cd SSlogs
+
+# 2. 安装依赖
+pip install -r requirements.txt
+
+# 3. 配置AI服务 (可选)
+# 编辑 config.yaml 配置你的AI服务
+
+# 4. 开始分析
+python main.py --config config.yaml --ai
+```
+
+[![Star History Chart](https://api.star-history.com/svg?repos=yourusername/SSlogs&type=Date)](https://star-history.com/#yourusername/SSlogs&Date)
+
 ---
 
 **⚡ 让日志分析更智能，让威胁溯源更高效！** 🚀
+
+如果这个项目对你有帮助，请给我们一个 ⭐️！
