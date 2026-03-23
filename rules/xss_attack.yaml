@@ -1,55 +1,65 @@
-name: XSS攻击检测 (增强版)
+name: "XSS攻击检测 (优化版)"
 pattern:
-  # 直接脚本注入检测 (包括各种编码和变体)
-  params: '(<\s*script[^>]*>.*?<\s*/\s*script\s*>|<\s*iframe[^>]*>.*?<\s*/\s*iframe\s*>)'
+  # 高危脚本注入 - 高置信度
+  params_high: "(?i)(<\\s*script[^>]*>[\\s\\S]*?<\\s*/\\s*script\\s*>|<\\s*script[^>]*/\\s*>|javascript\\s*:[\\s\\S]*\\S|vbscript\\s*:[\\s\\S]*\\S|data\\s*:\\s*text/html[\\s\\S]*<[^>]+>)"
 
-  # JavaScript协议和事件处理器 (包括绕过技术)
-  params: '(javascript\s*:|data\s*:\s*text/html|vbscript\s*:|on\w+\s*=|\w+\s*on\w+\s*=)'
+  # 危险事件处理器 - 高置信度
+  params_events: "(?i)(\\bon\\w+\\s*=\\s*[\\\"\\'\\`]?[\\s\\S]*?(?:alert|confirm|prompt|eval|Function|setTimeout|setInterval|fetch|XMLHttpRequest|document\\.|window\\.)[\\s\\S]*?[\\\"\\'\\`]?[\\s/>])"
 
-  # 常见XSS函数和对象 (包括编码变体)
-  params: '(alert\s*\(|confirm\s*\(|prompt\s*\(|eval\s*\(|setTimeout\s*\(|setInterval\s*\(|Function\s*\(|document\s*\.\s*cookie|window\s*\.\s*location|document\s*\.\s*domain|document\s*\.\s*URL)'
+  # DOM XSS危险函数 - 中等置信度
+  params_dom: "(?i)(document\\.(write|writeln)\\s*\\(|\\.innerHTML\\s*=\\s*[^\\n]+|\\.outerHTML\\s*=\\s*[^\\n]+|insertAdjacentHTML\\s*\\(|\\.insertAdjacentHTML|document\\.(cookie|location|URL|referrer|domain)\\s*[=[]"
 
-  # DOM XSS检测
-  params: '(document\.write|innerHTML\s*=|outerHTML\s*=|insertAdjacentHTML|document\.createElement)'
+  # JavaScript危险函数 - 中等置信度
+  params_js_funcs: "(?i)(\\beval\\s*\\(|new\\s+Function\\s*\\(|setTimeout\\s*\\(\\s*[\\\"\\'\\`]|setInterval\\s*\\(\\s*[\\\"\\'\\`]|constructor\\s*\\(\\s*\\)|window\\[|document\\[|\\[[\\s\\S]*\\]\\(\\s*[\\\"\\'\\`])"
 
-  # 编码绕过检测
-  decoded_params: '(&#x|&#\d+|\\u|\\x|%3c|%3e|%26lt|%26gt|&#60;|&#62;).*?(script|iframe|javascript|on\w+)'
+  # HTML5危险标签 - 低置信度
+  params_html5: "(?i)(<\\s*(svg|object|embed|math|iframe|frame|frameset|applet|form|input|button|textarea|select|meta|link|base|details|marquee)[^>]*(?:on\\w+|src|href|data|formaction|action|poster|background)\\s*=)"
 
-  # HTML5标签和属性
-  params: '(<\s*(svg|object|embed|form|input|meta|link|base|picture|source)[^>]*>)'
+  # CSS注入 - 低置信度
+  params_css: "(?i)(style\\s*=\\s*[\\\"\\'\\`]?[\\s\\S]*?(?:expression\\s*\\(|behavior\\s*:|binding\\s*:|-moz-binding\\s*:|@import|url\\s*\\(\\s*[\\\"\\'\\`]?javascript)[\\s\\S]*?[\\\"\\'\\`])"
 
-  # CSS注入
-  params: '(@import|expression\s*\(|javascript\s*:|binding\s*\()'
+  # 编码绕过 - 需要解码检测
+  decoded_params: "(?i)(&#x[0-9a-f]+;?|&#\\d+;?|\\\\u[0-9a-f]{4}|\\\\x[0-9a-f]{2}|%3c|%3e|%26lt|%26gt|&lt;|&gt;)[\\s\\S]*?(script|iframe|object|embed|on\\w+|javascript|vbscript|data\\s*:)"
 
-  # JSONP劫持
-  params: '(callback\s*=\s*\w+jsonp|\?callback=|jsoncallback\s*=)'
+  # URL编码的XSS
+  params_encoded: "(%3C\\s*%73\\s*%63\\s*%72\\s*%69\\s*%70\\s*%74|%3C\\s*script|%253Cscript|&#x3C;script|&#60;script)"
+
+  # 模板注入
+  params_template: "(\\{\\{\\s*[\\s\\S]*?\\}\\}|\\$\\{[\\s\\S]*?\\}|\\{\\%\\s*[\\s\\S]*?\\s*\\%\\}|<%\\s*[\\s\\S]*?\\s*%>)"
+
+  # JSONP劫持风险
+  params_jsonp: "(callback\\s*=\\s*\\w+[\\w\\.]*\\s*(?:[\\&\\?]|$)|jsoncallback\\s*=|jsonp\\s*=\\s*\\w+)"
+
+  # 扫描工具特征
+  user_agent: "(?i)(xsser|xss-validator|xss-payloader|xss-ray|owasp xenotix|cros78)"
 
 severity: high
 category: xss
+confidence_levels:
+  high:
+    - params_high
+    - params_events
+    - user_agent
+  medium:
+    - params_dom
+    - params_js_funcs
+    - params_template
+  low:
+    - params_html5
+    - params_css
+    - params_jsonp
 description: |
-  检测各种类型的跨站脚本攻击，包括：
-  - 反射型、存储型、DOM型XSS
-  - 编码绕过技术
-  - HTML5新标签利用
-  - CSS注入
-  - JSONP劫持
-
-  增强检测：
-  - 多种编码格式识别
-  - DOM XSS检测
-  - 事件处理器变体
-  - 属性操作检测
+  优化版XSS检测，采用置信度分级和上下文验证
 cwe: "CWE-79"
-references:
-  - "https://owasp.org/www-community/attacks/xss/"
-  - "https://portswigger.net/web-security/cross-site-scripting"
-  - "https://cheatsheetseries.owasp.org/cheatsheets/XSS_Filter_Evasion_Cheat_Sheet.html"
+owasp: "A03:2021 - Injection"
 attack_patterns:
   - "反射型XSS"
   - "存储型XSS"
   - "DOM型XSS"
+  - "突变型XSS"
   - "CSS注入"
+  - "模板注入"
   - "JSONP劫持"
-response_codes: [200, 302, 404]
+response_codes: [200, 302, 404, 400]
 threat_level: "high"
-impact: "可能导致会话劫持、数据窃取或恶意脚本执行"
+impact: "可能导致会话劫持、钓鱼攻击、数据窃取或恶意脚本执行"

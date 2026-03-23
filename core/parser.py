@@ -38,9 +38,11 @@ class LogParser:
             self.field_names = [field['name'] for field in self.fields]
             self.field_patterns = [field['regex'] for field in self.fields]
 
-        # 正则表达式缓存
+        # 正则表达式缓存（实例级缓存，避免lru_cache内存泄漏）
         self._regex_cache = {}
         self._field_pattern_cache = {}
+        self._pattern_cache = {}  # 新增：编译模式缓存
+        self._cache_max_size = 128  # 缓存最大大小
 
         # 预编译危险模式检测
         self.dangerous_regexes = [re.compile(pattern, re.IGNORECASE) for pattern in self.DANGEROUS_PATTERNS]
@@ -202,13 +204,27 @@ class LogParser:
             'total_processed': self.parsed_count + self.failed_count + self.blocked_count
         }
 
-    @lru_cache(maxsize=128)
     def _compile_field_pattern(self, pattern: str) -> re.Pattern:
-        """缓存编译后的字段正则表达式"""
+        """编译字段正则表达式（使用实例级缓存替代lru_cache避免内存泄漏）"""
+        # 检查实例级缓存
+        if pattern in self._pattern_cache:
+            self.cache_hits += 1
+            return self._pattern_cache[pattern]
+        
+        # 编译新的正则表达式
+        self.cache_misses += 1
         # 确保模式有捕获组
         if '(' not in pattern:
             pattern = f'({pattern})'
-        return re.compile(pattern)
+        compiled = re.compile(pattern)
+        
+        # LRU淘汰策略：如果缓存满了，移除最旧的条目
+        if len(self._pattern_cache) >= self._cache_max_size:
+            oldest_key = next(iter(self._pattern_cache.keys()))
+            del self._pattern_cache[oldest_key]
+        
+        self._pattern_cache[pattern] = compiled
+        return compiled
 
     def _partial_parse(self, line: str) -> Optional[Dict[str, str]]:
         """部分解析：逐个匹配字段"""
@@ -253,7 +269,7 @@ class LogParser:
     def clear_cache(self):
         """清理缓存"""
         self._field_pattern_cache.clear()
-        self._compile_field_pattern.cache_clear()
+        self._pattern_cache.clear()
         self.cache_hits = 0
         self.cache_misses = 0
 

@@ -18,6 +18,7 @@ class ThreatScore:
     confidence: float
     attack_vectors: List[str]
     risk_factors: List[str]
+    confidence_level: str = 'medium'  # high, medium, low
 
 class RuleEngine:
     def __init__(self, rule_dir: str, enable_ai_analysis: bool = False):
@@ -236,11 +237,24 @@ class RuleEngine:
         return None
 
     def _calculate_threat_score(self, rule: Dict[str, Any], match_details: Dict[str, Any]) -> ThreatScore:
-        """计算威胁评分（增强版）"""
+        """计算威胁评分（增强版 - 支持置信度分级）"""
         base_score = 0.0
         confidence = 0.5  # 基础置信度
         attack_vectors = []
         risk_factors = []
+        confidence_level = 'medium'  # 默认中等置信度
+
+        # 获取匹配的置信度级别（来自上下文分析）
+        if 'confidence_level' in match_details:
+            confidence_level = match_details['confidence_level']
+
+        # 根据置信度级别调整基础置信度
+        confidence_adjustments = {
+            'high': 0.25,
+            'medium': 0.0,
+            'low': -0.15
+        }
+        confidence += confidence_adjustments.get(confidence_level, 0.0)
 
         # 基于严重级别的基础分数（更精确）
         severity_scores = {
@@ -250,6 +264,13 @@ class RuleEngine:
             'low': 3.5
         }
         base_score = severity_scores.get(rule.get('severity', 'medium'), 5.5)
+
+        # 高置信度模式额外加分
+        if confidence_level == 'high':
+            base_score += 1.5
+            risk_factors.append('high_confidence_detection')
+        elif confidence_level == 'low':
+            base_score -= 1.0
 
         # 匹配字段权重分析
         matched_fields = match_details.get('matched_fields', [])
@@ -382,7 +403,8 @@ class RuleEngine:
             severity=final_severity,
             confidence=confidence,
             attack_vectors=attack_vectors,
-            risk_factors=risk_factors
+            risk_factors=risk_factors,
+            confidence_level=confidence_level
         )
 
     def match_log(self, log_entry: Dict[str, Any]) -> List[Dict[str, Any]]:
@@ -399,16 +421,29 @@ class RuleEngine:
         for match in quick_matches:
             context_match = self._context_analysis(match, log_entry)
             if context_match:
+                # 将置信度级别传递给match的details
+                match_details = match.get('details', {})
+                if 'confidence_level' in match:
+                    match_details['confidence_level'] = match['confidence_level']
+                # 添加上下文标记
+                if match.get('is_internal'):
+                    match_details['is_internal'] = True
+                if match.get('is_documentation'):
+                    match_details['is_documentation'] = True
+                if match.get('is_api_doc'):
+                    match_details['is_api_doc'] = True
+
                 # 第三阶段：威胁评分
-                threat_score = self._calculate_threat_score(match['rule'], match)
+                threat_score = self._calculate_threat_score(match['rule'], match_details)
 
                 match_result = {
                     'rule': match['rule'],
                     'log_entry': log_entry,
                     'threat_score': threat_score,
-                    'match_details': match.get('details', {}),
+                    'match_details': match_details,
                     'rule_id': match.get('rule_id'),
-                    'timestamp': time.time()
+                    'timestamp': time.time(),
+                    'confidence_level': match_details.get('confidence_level', 'medium')
                 }
 
                 matched.append(match_result)
@@ -416,8 +451,8 @@ class RuleEngine:
                 # 更新统计
                 self.rule_stats[match.get('rule_id', 'unknown')] += 1
 
-        # 按威胁评分排序
-        matched.sort(key=lambda x: x['threat_score'].score, reverse=True)
+        # 按威胁评分和置信度排序
+        matched.sort(key=lambda x: (x['threat_score'].score, x.get('confidence_level', 'medium')), reverse=True)
 
         return matched
 
@@ -470,18 +505,77 @@ class RuleEngine:
         return matches
 
     def _context_analysis(self, match: Dict[str, Any], log_entry: Dict[str, Any]) -> bool:
-        """上下文分析阶段"""
-        # 这里可以添加更复杂的上下文分析逻辑
-        # 例如：检查IP信誉、分析攻击链、检测异常行为等
-
-        # 简单的上下文过滤：检查是否为误报
+        """上下文分析阶段 - 增强版"""
+        # 获取请求的各个部分
         user_agent = log_entry.get('user_agent', '').lower()
+        request_path = log_entry.get('request_path', '')
+        referer = log_entry.get('referer', '')
 
-        # 已知安全工具白名单
-        safe_agents = ['googlebot', 'bingbot', 'slurp', 'duckduckbot']
+        # 1. 已知安全爬虫白名单（完整版）
+        safe_agents = [
+            'googlebot', 'bingbot', 'slurp', 'duckduckbot',
+            'baiduspider', 'yandexbot', 'facebookexternalhit',
+            'twitterbot', 'linkedinbot', 'pinterest',
+            'applebot', 'semrushbot', 'mj12bot',
+            'ahrefsbot', 'dotbot', 'archive.org_bot'
+        ]
         if any(agent in user_agent for agent in safe_agents):
-            # 对于已知的安全爬虫，降低误报
             return False
+
+        # 2. 静态资源请求（通常不是攻击目标）
+        static_extensions = [
+            '.css', '.js', '.jpg', '.jpeg', '.png', '.gif', '.svg',
+            '.ico', '.woff', '.woff2', '.ttf', '.eot', '.otf',
+            '.mp4', '.mp3', '.avi', '.mov', '.pdf', '.xml'
+        ]
+        if any(request_path.lower().endswith(ext) for ext in static_extensions):
+            return False
+
+        # 3. 健康检查和监控端点
+        health_paths = [
+            '/health', '/healthcheck', '/ping', '/status',
+            '/metrics', '/actuator/health', '/ready',
+            '/.well-known/', '/robots.txt', '/favicon.ico'
+        ]
+        if any(hp in request_path.lower() for hp in health_paths):
+            return False
+
+        # 4. 内部服务请求（可根据实际情况调整）
+        internal_ips = ['127.0.0.1', '::1', 'localhost']
+        src_ip = log_entry.get('src_ip', '')
+        if src_ip in internal_ips:
+            # 内部请求降低优先级但不完全过滤
+            match['is_internal'] = True
+
+        # 5. 技术文档和学习网站（基于Referer）
+        doc_referers = [
+            'stackoverflow.com', 'github.com', 'developer.mozilla.org',
+            'w3schools.com', 'wikipedia.org', 'medium.com',
+            'stackoverflow.com', 'docs.', 'documentation'
+        ]
+        if any(dr in referer.lower() for dr in doc_referers):
+            match['is_documentation'] = True
+
+        # 6. 检测是否为API文档或示例
+        api_doc_patterns = ['/api/docs', '/swagger', '/redoc', '/openapi', '/graphql']
+        if any(ad in request_path.lower() for ad in api_doc_patterns):
+            match['is_api_doc'] = True
+
+        # 7. 分析置信度级别
+        rule = match.get('rule', {})
+        confidence_levels = rule.get('confidence_levels', {})
+        matched_field = match.get('details', {}).get('matched_fields', [''])[0]
+
+        # 根据匹配的字段确定置信度级别
+        if confidence_levels:
+            for level, fields in confidence_levels.items():
+                if matched_field in fields or any(f in matched_field for f in fields):
+                    match['confidence_level'] = level
+                    break
+            else:
+                match['confidence_level'] = 'medium'
+        else:
+            match['confidence_level'] = 'medium'
 
         return True
 

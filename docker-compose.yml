@@ -1,0 +1,184 @@
+# SSlogs Docker Compose 配置
+# 用于快速部署完整的 SSlogs 分析环境
+
+version: '3.8'
+
+services:
+  # ===========================
+  # SSlogs 主应用
+  # ===========================
+  sslogs:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: production
+    container_name: sslogs_app
+    restart: unless-stopped
+    volumes:
+      # 配置文件
+      - ./config.yaml:/app/config.yaml:ro
+      - ./config:/app/config:ro
+      # 日志和输出
+      - ./logs:/app/logs
+      - ./output:/app/output
+      # 数据目录
+      - ./data:/app/data
+      # GeoIP 数据库
+      - geoip-db:/usr/share/GeoIP
+    environment:
+      # Python 环境
+      - PYTHONUNBUFFERED=1
+      - TZ=Asia/Shanghai
+      # AI 服务配置（可选）
+      - DEEPSEEK_API_KEY=${DEEPSEEK_API_KEY:-}
+      - OLLAMA_API_URL=${OLLAMA_API_URL:-http://ollama:11434}
+      - LM_STUDIO_API_URL=${LM_STUDIO_API_URL:-http://host.docker.internal:1234}
+    networks:
+      - sslogs-network
+    depends_on:
+      - ollama
+    healthcheck:
+      test: ["CMD", "python", "-c", "import sys; sys.exit(0)"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
+  # ===========================
+  # GUI 版本（需要 X11 转发）
+  # ===========================
+  sslogs-gui:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: gui
+    container_name: sslogs_gui
+    restart: unless-stopped
+    volumes:
+      - ./config.yaml:/app/config.yaml:ro
+      - ./logs:/app/logs
+      - ./output:/app/output
+      - ./data:/app/data
+      # X11 socket（用于显示 GUI）
+      - /tmp/.X11-unix:/tmp/.X11-unix:rw
+      - geoip-db:/usr/share/GeoIP
+    environment:
+      - DISPLAY=${DISPLAY:-:0}
+      - PYTHONUNBUFFERED=1
+    networks:
+      - sslogs-network
+    profiles:
+      - gui
+
+  # ===========================
+  # Ollama 本地 AI 服务
+  # ===========================
+  ollama:
+    image: ollama/ollama:latest
+    container_name: sslogs_ollama
+    restart: unless-stopped
+    volumes:
+      - ollama-data:/root/.ollama
+    ports:
+      - "11434:11434"
+    environment:
+      - OLLAMA_ORIGINS=*
+    networks:
+      - sslogs-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:11434/api/tags"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    profiles:
+      - ai
+
+  # ===========================
+  # Redis 缓存服务（可选）
+  # ===========================
+  redis:
+    image: redis:7-alpine
+    container_name: sslogs_redis
+    restart: unless-stopped
+    command: redis-server --appendonly yes --requirepass ${REDIS_PASSWORD:-sslogs123}
+    volumes:
+      - redis-data:/data
+    ports:
+      - "6379:6379"
+    networks:
+      - sslogs-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+    profiles:
+      - cache
+
+  # ===========================
+  # PostgreSQL 数据库（可选）
+  # ===========================
+  postgres:
+    image: postgres:15-alpine
+    container_name: sslogs_postgres
+    restart: unless-stopped
+    environment:
+      - POSTGRES_DB=sslogs
+      - POSTGRES_USER=sslogs
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-sslogs123}
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    networks:
+      - sslogs-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U sslogs"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+    profiles:
+      - database
+
+  # ===========================
+  # 开发环境
+  # ===========================
+  sslogs-dev:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: development
+    container_name: sslogs_dev
+    volumes:
+      - .:/app
+      - ./logs:/app/logs
+      - ./output:/app/output
+    environment:
+      - PYTHONUNBUFFERED=1
+      - PYTHONDONTWRITEBYTECODE=1
+    networks:
+      - sslogs-network
+    profiles:
+      - dev
+    command: /bin/bash
+
+# ===========================
+# 网络配置
+# ===========================
+networks:
+  sslogs-network:
+    driver: bridge
+    name: sslogs_network
+
+# ===========================
+# 卷配置
+# ===========================
+volumes:
+  geoip-db:
+    name: sslogs_geoip_db
+  ollama-data:
+    name: sslogs_ollama_data
+  redis-data:
+    name: sslogs_redis_data
+  postgres-data:
+    name: sslogs_postgres_data

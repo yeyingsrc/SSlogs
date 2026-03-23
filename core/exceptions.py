@@ -54,3 +54,11 @@ class PerformanceError(LogAnalysisError):
 class ResourceExhaustionError(PerformanceError):
     """资源耗尽错误"""
     pass
+
+class SecurityError(LogAnalysisError):
+    """安全相关错误"""
+    pass
+
+class CacheError(LogAnalysisError):
+    """缓存相关错误"""
+    pass

@@ -1,52 +1,67 @@
-name: SQL注入攻击检测 (增强版)
+name: "SQL注入攻击检测 (优化版)"
 pattern:
-  # 基础SQL注入关键字
-  params: '(union\s+select|select\s+.*?\s+from|insert\s+into|delete\s+from|drop\s+table|alter\s+table|create\s+table|truncate\s+table|exec\s*\(|execute\s*\()'
+  # 核心SQL注入模式 - 需要上下文验证
+  params: "(?i)(\\b(union\\s+(all\\s+)?select|select\\s+[\\w\\*\\s,]+\\s+from|insert\\s+into\\s+\\w+\\s+values|delete\\s+from\\s+\\w+|drop\\s+(table|database|index)|truncate\\s+table|alter\\s+table\\s+\\w+|create\\s+(table|database)\\s+\\w+|update\\s+\\w+\\s+set)\\b)"
 
-  # 高级注入技术
-  params: '(xp_cmdshell|sp_executesql|declare\s+@|set\s+@|waitfor\s+delay|benchmark\s*\(|sleep\s*\(|pg_sleep\s*\()'
+  # 危险函数和存储过程 - 高置信度
+  params_high_confidence: "(?i)(xp_cmdshell|sp_executesql|sp_oacreate|sp_oamethod|openrowset|opendatasource|bulk\\s+insert|into\\s+(out|dump)file|load_file\\s*\\()"
 
-  # SQLMap和自动化工具
-  user_agent: '(sqlmap|havij|pangolin|bbscan|absinthe|netsparker|acunetix|appscan)'
+  # 盲注和时间注入 - 中等置信度
+  params_blind: "(?i)(\\b(and|or)\\b\\s+[\\w\\\"\\']+\\s*=\\s*[\\w\\\"\\']+\\s*\\+\\s*\\d+|(and|or)\\s+(sleep|benchmark|pg_sleep|waitfor\\s+delay)\\s*\\([\\d]+\\)|if\\s*\\([\\w\\s=]+\\,\\s*[\\w\\s]+\\,\\s*[\\w\\s]+\\))"
 
-  # 编码和绕过技术
-  decoded_params: '(%27|%22|%2527|%2522|0x[0-9a-f]+|char\s*\(\s*\d+\s*\)|concat\s*\()'
-
-  # 盲注和时间注入
-  params: '(and\s+.*?=.+?sleep\(|or\s+.*?=.+?sleep\(|and\s+.*?=\s*\d+\s*\+\s*\d+|or\s+.*?=\s*\d+\s*\+\s*\d+)'
+  # 数据库指纹和信息收集
+  params_fingerprint: "(?i)(@@version|@@datadir|@@hostname|@@basedir|version\\s*\\(|database\\s*\\(|user\\s*\\(|system_user\\s*\\(|session_user\\s*\\(|schema\\s*\\()"
 
   # NoSQL注入
-  params: '(\{\s*\$ne\s*:|\{\s*\$gt\s*:|\{\s*\$lt\s*:|\{\s*\$in\s*:|\{\s*\$nin\s*:|\{\s*\$where\s*:|\{\s*\$regex\s*:'
+  params_nosql: "(\\{\\s*\\$(ne|gt|lt|gte|lte|in|nin|where|regex|exists|type|mod|text|search)\\s*:|\\[\\s*\\$(each|slice|sort)\\s*\\]|db\\.collection\\.find\\s*\\()"
 
-  # 数据库指纹识别
-  params: '(@@version|version\s*\(\)|@@datadir|database\s*\(\)|user\s*\(\)|system_user\s*\(\)|session_user\s*\()'
+  # 编码绕过技术 - 需要解码检测
+  decoded_params: "(?i)((%27|%2527|%26%2339|%26%23x27)|(%22|%2522|%26%2334|%26%23x22)|(0x[0-9a-fA-F]{2,})|(char\\s*\\(\\s*\\d+\\s*\\)\\s*\\+)|(concat\\s*\\()|(unhex\\s*\\()|(from_base64\\s*\\()|(to_base64\\s*\\())"
+
+  # SQLMap和自动化工具特征
+  user_agent: "(?i)(sqlmap|havij|pangolin|bsqlbf|sqlninja|sqlsus|mysqloit|jsql|nosqlmap|mole|exploit)"
+
+  # 注释绕过
+  params_comment: "(\\/\\*[\\s\\S]*?\\*\\/|--\\s|(--|#|\\/)\\s*$|\\s+\\-\\-\\s+|\\s+#\\s+[\\w\\s]+\\s*$)"
 
 severity: critical
-category: injection
+category: sql_injection
+confidence_levels:
+  high:
+    - params_high_confidence
+    - user_agent
+  medium:
+    - params_blind
+    - params_fingerprint
+    - params_nosql
+  low:
+    - params
+    - params_comment
 description: |
-  检测各种类型的SQL注入攻击，包括：
-  - 经典SQL注入（Union、Boolean、Time-based）
-  - 高级数据库攻击（存储过程、命令执行）
-  - 编码绕过和混淆技术
-  - 自动化注入工具检测
-  - NoSQL注入攻击
-  - 数据库指纹识别
+  优化版SQL注入检测，采用置信度分级减少误报：
 
-  增强检测：
-  - 多种编码格式识别
-  - 盲注和时间注入检测
-  - NoSLQ注入覆盖
-  - 工具特征识别
+  高置信度检测（立即告警）：
+  - 危险存储过程和函数调用
+  - 自动化注入工具特征
+
+  中等置信度（需要上下文验证）：
+  - 盲注和时间盲注
+  - 数据库指纹识别
+  - NoSQL注入
+
+  低置信度（需要多重匹配）：
+  - 通用SQL关键字
+  - 注释绕过尝试
+
 cwe: "CWE-89"
-references:
-  - "https://owasp.org/www-community/attacks/SQL_Injection"
-  - "https://portswigger.net/web-security/sql-injection"
+owasp: "A03:2021 - Injection"
 attack_patterns:
   - "联合查询注入"
   - "布尔盲注"
   - "时间盲注"
+  - "堆叠查询"
   - "存储过程注入"
   - "NoSQL注入"
-response_codes: [200, 404, 500, 502]
+response_codes: [200, 404, 500, 502, 503]
 threat_level: "critical"
-impact: "可能导致数据库完全妥协、数据泄露或系统控制"
+impact: "可能导致数据库完全妥协、敏感数据泄露或系统控制"

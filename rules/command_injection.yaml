@@ -1,68 +1,72 @@
-name: 命令注入攻击检测 (增强版)
+name: "命令注入攻击检测 (优化版)"
 pattern:
-  # 命令分隔符和管道
-  params: '(\;|\&\&|\|\||\||\&|`|\$\(|\n|\r)\s*'
+  # 高危命令组合 - 高置信度
+  params_critical: "(?i)([;&|`]\\s*|(?<=\\=))[\\\"\\']?\\s*(whoami\\s*;|id\\s*;|uname\\s+-a|cat\\s+/etc/(passwd|shadow|hosts)|netstat\\s+-|ifconfig\\s*-a|ps\\s+(aux|ef)|ls\\s+-la\\s*/\\s*;|rm\\s+-rf\\s*/)\\s*[\\\"\\']?"
 
-  # 系统信息收集命令
-  params: '(whoami|id|uname|hostname|pwd|ls|dir|cat|type|more|less|head|tail|grep|find|which|whereis)'
+  # 命令分隔符+敏感命令 - 高置信度
+  params_separators: "(?i)(\\;|\\|\\||\\|\\&\\&|\\`|\\$\\()\\s*[\\\"\\']?\\s*(whoami|id\\s*-a|uname|hostname|pwd|cat\\s+|type\\s+|head\\s+|tail\\s+|grep\\s+|find\\s+|chmod\\s+|chown\\s+|rm\\s+|mv\\s+|cp\\s+|wget\\s+|curl\\s+|nc\\s+|netcat\\s+|bash\\s+-|sh\\s+-|python\\s+-|perl\\s+-|php\\s+-|ruby\\s+-)\\s"
 
-  # 网络相关命令
-  params: '(ping|traceroute|nslookup|dig|netstat|ss|lsof|curl|wget|nc|netcat|telnet|ftp|ssh|rsync)'
+  # 反引号命令替换 - 高置信度
+  params_backtick: "\\`\\s*[^\\`]+\\s*\\`|\\$\\(\\s*[^\\)]+\\s*\\)"
 
-  # 文件操作命令
-  params: '(rm|mv|cp|touch|chmod|chown|chgrp|mkdir|rmdir|tar|zip|unzip|gzip|gunzip)'
+  # 管道和重定向攻击 - 高置信度
+  params_pipe: "(?i)(\\|\\s*(bash|sh|python|perl|ruby|php|nc|netcat|telnet|ftp|wget|curl)|>\\s*/(tmp|var|etc|dev|proc)|>>\\s*/(tmp|var|etc)|<\\s*/(etc|proc|var))"
 
-  # 进程管理命令
-  params: '(ps|top|kill|killall|pkill|nohup|bg|fg|jobs|cron|at|batch)'
+  # 网络相关命令 - 中等置信度
+  params_network: "(?i)([;&|]\\s*|\\$\\()\\s*(nc\\s+-|netcat\\s+-|telnet\\s+|wget\\s+http|curl\\s+http|curl\\s+-|wget\\s+-|nmap\\s+|masscan\\s+|hydra\\s+|john\\s+|hashcat\\s+)"
 
-  # Windows命令
-  params: '(cmd\.exe|powershell|wscript|cscript|tasklist|taskkill|netstat|ipconfig|systeminfo|wmic|reg|dir|type|del|copy|move|attrib|icacls)'
+  # Windows命令 - 中等置信度
+  params_windows: "(?i)(cmd\\.exe\\s*/c|powershell\\s+-|wscript\\.|cscript\\.|tasklist|taskkill\\s+|net\\s+(user|localgroup|share)|netsh\\s+|reg\\s+(query|add|delete)|wmic\\s+|systeminfo)"
 
-  # 编程和解释器
-  params: '(python|perl|ruby|php|node|java|javac|gcc|g\+\+|make|bash|sh|zsh|csh|tcsh|ksh)'
+  # 反序列化攻击 - 高置信度
+  params_deserialize: "(?i)(pickle\\.loads|yaml\\.load\\(|marshal\\.loads|unserialize\\(|ObjectInputStream|readObject\\(|__reduce__|subprocess\\.(call|run|Popen)|os\\.system\\(|os\\.popen\\()"
 
-  # 数据库命令
-  params: '(mysql|psql|sqlite|mongo|redis|oracle|sqlplus|isql)'
+  # 编码绕过 - 需要解码检测
+  decoded_params: "(?i)((base64|hex|rot13|url|unicode).*(decode|unencode)|echo\\s+[A-Za-z0-9+/=]+\\s*\\|\\s*(base64|bash|sh|python|perl)|python\\s+-c\\s*import|eval\\s*\\(|exec\\s*\\()"
 
-  # 攻击工具和后门
-  params: '(nc|netcat|socat|nmap|masscan|hydra|medusa|john|hashcat|aircrack|metasploit|msfconsole)'
+  # 请求头中的命令注入
+  request_headers: "(?i)(User-Agent|Referer|X-Forwarded-For|Cookie):\\s*[^\\n]*?(\\;|\\||\\`|\\$\\().*(?:wget|curl|nc|bash|python|perl|cmd\\.exe|powershell)"
 
-  # 管道和重定向
-  params: '(>|>>|<|<<|2>|2>>|&>|&>>|2>&1|1>&2|tee|xargs|awk|sed|sort|uniq|cut|tr)'
+  # User-Agent中的攻击工具
+  user_agent: "(?i)(wget/|curl/|libwww|python-requests|nikto|nmap|masscan|metasploit|dirbuster|gobuster|wfuzz|burp)"
 
-  # 后台执行和计划任务
-  params: '(&|nohup|screen|tmux|at|cron|crontab|systemd|service|systemctl)'
+  # 后门和反弹Shell - 高置信度
+  params_backdoor: "(?i)(nc\\s+.-e\\s+(bash|sh|cmd)|bash\\s+-i\\s+>|perl\\s+-e\\s+|python\\s+-c\\s+.*socket|rm\\s+/tmp/|/dev/tcp/|/dev/udp/|mkfifo\\s+/tmp/)"
 
-  # 编码绕过
-  decoded_params: '(command|cmd|exec|system|shell).*(base64|hex|url|rot13|unicode)'
-
-  # User-Agent中的命令注入
-  user_agent: '(wget|curl|nc|netcat|nmap|python|perl|ruby|bash|sh|powershell|cmd\.exe)'
+  # 文件写入攻击
+  params_write: "(?i)(echo\\s+.*>\\s*/(etc|var|tmp|home|root)|printf\\s+.*>\\s*/(etc|var|tmp)|(curl|wget).*\\|\\s*(bash|sh|tar|unzip))"
 
 severity: critical
 category: command_injection
+confidence_levels:
+  high:
+    - params_critical
+    - params_separators
+    - params_backtick
+    - params_backdoor
+    - params_deserialize
+  medium:
+    - params_pipe
+    - params_network
+    - params_windows
+    - params_write
+    - request_headers
+  low:
+    - decoded_params
+    - user_agent
 description: |
-  增强版命令注入检测，覆盖广泛的攻击向量：
-  - 命令分隔符和管道操作
-  - 系统信息收集命令
-  - 网络扫描和连接工具
-  - 文件系统操作
-  - 进程管理和权限操作
-  - Windows和Linux命令
-  - 编程语言解释器
-  - 数据库客户端工具
-  - 攻击工具和后门程序
-  - 编码绕过技术
-
+  优化版命令注入检测，大幅降低误报率：
+  - 所有命令检测都需要命令分隔符上下文
+  - 不再单独检测常见命令（ls/cat/whoami等）
+  - 专注于命令组合和攻击模式
 cwe: "CWE-78"
-references:
-  - "https://owasp.org/www-project-top-ten/2017/A1_2017-Injection"
-  - "https://owasp.org/www-project-web-security-testing-guide/latest/4-Web_Application_Security_Testing/07-Input_Validation_Testing/10-Testing_for_Command_Injection"
+owasp: "A03:2021 - Injection"
 attack_patterns:
   - "命令注入"
   - "参数注入"
-  - "代码注入"
+  - "反弹Shell"
   - "后门植入"
+  - "反序列化攻击"
 response_codes: [200, 403, 500, 502]
 threat_level: "critical"
-impact: "可能导致系统命令执行、权限提升或横向移动"
+impact: "可能导致远程代码执行、系统完全控制或横向移动"

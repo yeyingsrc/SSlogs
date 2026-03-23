@@ -1,0 +1,73 @@
+# Docker 构建忽略文件
+
+# Python 相关
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.egg-info/
+dist/
+build/
+*.egg
+
+# 虚拟环境
+venv/
+virtualenv/
+.venv/
+.env/
+
+# IDE 和编辑器
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Git
+.git/
+.gitignore
+
+# 测试和覆盖率
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+.nox/
+
+# 日志和输出
+logs/
+output/
+*.log
+
+# 数据和配置（敏感）
+data/
+config/*.local.yaml
+config/secrets/
+.env.local
+.env.*.local
+
+# 临时文件
+*.tmp
+*.bak
+.cache/
+
+# 文档
+docs/_build/
+site/
+
+# CI/CD
+.github/
+.gitlab-ci.yml
+.travis.yml
+
+# Docker 相关
+Dockerfile.*
+docker-compose.*.yml
+.dockerignore
+
+# 其他
+README.md
+*.md
+!requirements.txt

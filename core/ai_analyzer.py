@@ -1,16 +1,28 @@
+import os
 import requests
 import logging
 import yaml
 import time
-from typing import Dict, Any
+from typing import Dict, Any, Optional
+from requests.adapters import HTTPAdapter
+from urllib3.util.retry import Retry
 from .exceptions import AIServiceError, AIServiceUnavailableError, AIAuthenticationError, AIRateLimitError
 
+
 class AIAnalyzer:
+    """AI分析器 - 支持云端和本地AI模型"""
+    
+    # 环境变量名称常量
+    ENV_API_KEY = 'SSLOGS_AI_API_KEY'
+    ENV_CLOUD_PROVIDER = 'SSLOGS_AI_CLOUD_PROVIDER'
+    ENV_LOCAL_PROVIDER = 'SSLOGS_AI_LOCAL_PROVIDER'
+    ENV_AI_TYPE = 'SSLOGS_AI_TYPE'
+    
     def __init__(self, config_path: str = 'config.yaml'):
         self.config = self._load_config(config_path)
-        self.ai_type = self.config.get('ai', {}).get('type', 'cloud')
-        self.cloud_provider = self.config.get('ai', {}).get('cloud_provider', 'deepseek')
-        self.local_provider = self.config.get('ai', {}).get('local_provider', 'ollama')
+        self.ai_type = self._get_config_with_env('ai', 'type', self.ENV_AI_TYPE, 'cloud')
+        self.cloud_provider = self._get_config_with_env('ai', 'cloud_provider', self.ENV_CLOUD_PROVIDER, 'deepseek')
+        self.local_provider = self._get_config_with_env('ai', 'local_provider', self.ENV_LOCAL_PROVIDER, 'ollama')
         self.logger = logging.getLogger(__name__)
         
         # 重试配置
@@ -20,11 +32,15 @@ class AIAnalyzer:
         
         # 超时配置
         self.default_timeout = self.config.get('ai', {}).get('default_timeout', 30)
+        
+        # 初始化HTTP会话（连接池优化）
+        self._init_http_session()
 
         # 加载云端模型配置
         if self.cloud_provider == 'deepseek':
             self.deepseek_config = self.config.get('deepseek', {})
-            self.api_key = self.deepseek_config.get('api_key', '')
+            # 优先从环境变量获取API密钥，提高安全性
+            self.api_key = self._get_secure_api_key()
             self.cloud_model = self.deepseek_config.get('model', 'deepseek-ai/DeepSeek-V3')
             self.cloud_base_url = self.deepseek_config.get('base_url', 'https://api.siliconflow.cn/v1/chat/completions')
             self.cloud_headers = {
@@ -40,6 +56,56 @@ class AIAnalyzer:
             self.local_headers = {
                 'Content-Type': 'application/json'
             }
+    
+    def _init_http_session(self):
+        """初始化HTTP会话，配置连接池和重试策略"""
+        self.session = requests.Session()
+        
+        # 配置重试策略
+        retry_strategy = Retry(
+            total=3,
+            backoff_factor=1,
+            status_forcelist=[429, 500, 502, 503, 504],
+            allowed_methods=["HEAD", "GET", "OPTIONS", "POST"]
+        )
+        
+        # 配置连接池适配器
+        adapter = HTTPAdapter(
+            max_retries=retry_strategy,
+            pool_connections=5,
+            pool_maxsize=10
+        )
+        
+        self.session.mount("http://", adapter)
+        self.session.mount("https://", adapter)
+    
+    def _get_config_with_env(self, section: str, key: str, env_var: str, default: str) -> str:
+        """从配置文件或环境变量获取配置值"""
+        # 优先使用环境变量
+        env_value = os.environ.get(env_var)
+        if env_value:
+            return env_value
+        # 其次使用配置文件
+        return self.config.get(section, {}).get(key, default)
+    
+    def _get_secure_api_key(self) -> str:
+        """安全地获取API密钥，优先从环境变量读取"""
+        # 1. 首先检查环境变量
+        env_api_key = os.environ.get(self.ENV_API_KEY)
+        if env_api_key:
+            self.logger.debug("从环境变量获取API密钥")
+            return env_api_key
+        
+        # 2. 其次从配置文件读取
+        config_api_key = self.deepseek_config.get('api_key', '')
+        if config_api_key:
+            self.logger.debug("从配置文件获取API密钥")
+            # 检查是否为占位符
+            if config_api_key in ['your-api-key-here', 'YOUR_API_KEY', '']:
+                self.logger.warning("API密钥未配置，请设置环境变量 SSLOGS_AI_API_KEY 或修改配置文件")
+            return config_api_key
+        
+        return ''
 
     def _load_config(self, config_path: str) -> Dict[str, Any]:
         try:

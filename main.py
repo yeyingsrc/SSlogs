@@ -29,12 +29,10 @@ import tempfile
 from collections import Counter
 
 class LogHunter:
+    """日志分析主类 - 支持上下文管理器"""
+    
     def __init__(self, config_path: str, ai_enabled: bool = False, server_ip: Optional[str] = None, disable_signal_handlers: bool = False):
-        """
-        日志分析主类
-        """
         self.interrupted = False
-
         # 使用新的配置管理器
         self.config_manager = ConfigManager(config_path)
         try:
@@ -424,6 +422,36 @@ class LogHunter:
             if self.interrupted:
                 self.logger.info("程序已安全退出")
                 sys.exit(0)
+    
+    def _cleanup_resources(self):
+        """清理资源"""
+        try:
+            # 清理解析器缓存
+            if hasattr(self.parser, 'clear_cache'):
+                self.parser.clear_cache()
+            
+            # 清理规则引擎资源
+            if hasattr(self.rule_engine, 'compiled_rules'):
+                self.rule_engine.compiled_rules.clear()
+            
+            # 清理AI分析器会话
+            if self.ai_analyzer and hasattr(self.ai_analyzer, 'session'):
+                self.ai_analyzer.session.close()
+            
+            # 强制垃圾回收
+            gc.collect()
+            self.logger.debug("资源清理完成")
+        except Exception as e:
+            self.logger.warning(f"资源清理失败: {e}")
+    
+    def __enter__(self):
+        """上下文管理器入口"""
+        return self
+    
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        """上下文管理器出口"""
+        self._cleanup_resources()
+        return False
     
     def _preview_log_lines(self, log_generator) -> List[str]:
         """预览日志行"""

@@ -51,7 +51,7 @@ report:
   output_format: html
   output_directory: reports
 deepseek:
-  api_key: ${DEEPSEEK_API_KEY}
+  api_key: demo_key_for_testing
   model: deepseek-ai/DeepSeek-V3
   base_url: https://api.siliconflow.cn/v1/chat/completions
   timeout: 30
@@ -87,3 +87,14 @@ ollama:
   base_url: http://localhost:11434/api/chat
   timeout: 60
 geoip_db_path: /Users/wooluo/DEV/SSlogs/config/GeoLite2-Country.mmdb
+
+# 日志配置
+logging:
+  level: INFO
+  format: '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+  file: logs/sslogs.log
+
+# 规则配置
+rules:
+  path: rules/
+  auto_reload: true
