@@ -98,13 +98,11 @@ class AIAnalyzer:
         
         # 2. 其次从配置文件读取
         config_api_key = self.deepseek_config.get('api_key', '')
-        if config_api_key:
+        if config_api_key and config_api_key not in ['your-api-key-here', 'YOUR_API_KEY', 'demo_key_for_testing', '']:
             self.logger.debug("从配置文件获取API密钥")
-            # 检查是否为占位符
-            if config_api_key in ['your-api-key-here', 'YOUR_API_KEY', '']:
-                self.logger.warning("API密钥未配置，请设置环境变量 SSLOGS_AI_API_KEY 或修改配置文件")
             return config_api_key
         
+        self.logger.warning("API密钥未配置，请设置环境变量 SSLOGS_AI_API_KEY 或修改配置文件")
         return ''
 
     def _load_config(self, config_path: str) -> Dict[str, Any]:

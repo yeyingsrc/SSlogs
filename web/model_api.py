@@ -21,7 +21,8 @@ from core.lm_studio_connector import get_lm_studio_connector
 
 # 创建Flask应用
 app = Flask(__name__)
-CORS(app)  # 启用跨域支持
+# CORS限制：仅允许本地访问，生产环境应配置实际域名
+CORS(app, origins=["http://localhost:3000", "http://127.0.0.1:3000"])
 
 # 配置日志
 logging.basicConfig(level=logging.INFO)
@@ -1702,7 +1703,7 @@ def get_model_mappings():
             "error": str(e)
         }), 500
 
-def create_model_management_server(host: str = "0.0.0.0", port: int = 8080, debug: bool = False):
+def create_model_management_server(host: str = "127.0.0.1", port: int = 8080, debug: bool = False):
     """创建模型管理服务器"""
 
     def run_server():

@@ -19,6 +19,8 @@ log_format:
 rule_dir: rules
 rules:
   default_severity: medium
+  path: rules/
+  auto_reload: true
 analysis:
   batch_size: 1000
   max_events: 100
@@ -51,7 +53,7 @@ report:
   output_format: html
   output_directory: reports
 deepseek:
-  api_key: demo_key_for_testing
+  api_key: ""
   model: deepseek-ai/DeepSeek-V3
   base_url: https://api.siliconflow.cn/v1/chat/completions
   timeout: 30
@@ -86,15 +88,10 @@ ollama:
   model: deepseek-r1:14b
   base_url: http://localhost:11434/api/chat
   timeout: 60
-geoip_db_path: /Users/wooluo/DEV/SSlogs/config/GeoLite2-Country.mmdb
+geoip_db_path: config/GeoLite2-Country.mmdb
 
 # 日志配置
 logging:
   level: INFO
   format: '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
   file: logs/sslogs.log
-
-# 规则配置
-rules:
-  path: rules/
-  auto_reload: true
