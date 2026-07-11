@@ -1,6 +1,16 @@
+# SSlogs 配置文件示例
+#
+# 安全提示：
+# 1. 不要在版本控制中提交包含真实API密钥的配置文件
+# 2. 建议使用环境变量存储敏感信息
+# 3. 复制此文件为 config.yaml 并填入您的配置
+
+# 日志文件配置
 log_path: logs/*.log
 server:
-  ip: 192.168.1.100
+  ip: 192.168.1.100  # 目标服务器IP地址
+
+# 日志格式配置
 log_format:
   type: web
   timestamp_format: '%d/%b/%Y:%H:%M:%S %z'
@@ -9,13 +19,15 @@ log_format:
     timestamp: \[(.*?)\]
     request_line: '"([A-Z]+\s+[^\s]+\s+HTTP/[\d\.]+)"'
     request_method: '"([A-Z]+)\s'
-    request_path: '"[A-Z]+\s+([^\s]+)\s+'
+    request_path: '"[A-Z]+\s+([^\s]+)\s'
     http_version: '(HTTP/\d\.\d)"'
     status_code: '"\s+(\d{3})\s+'
     response_size: '\s+(\d+)\s+'
     processing_time: '\s+([\d.]+)\s+'
     user_agent: '"user_agent":"([^"]*)"'
     client_info: '{(.*?)}'
+
+# 规则引擎配置
 rule_dir: rules
 rules:
   path: rules/
@@ -23,6 +35,8 @@ rules:
   case_sensitive: false
   max_matches: 50
   auto_reload: true
+
+# 分析配置
 analysis:
   batch_size: 1000
   max_events: 100
@@ -30,12 +44,14 @@ analysis:
   dynamic_batch_size: true
   memory_optimization: aggressive
   rule_preloading: true
+
 context_lines: 5
+
+# AI分析配置
 ai_analysis:
   high_risk_only: true
   successful_attacks_only: true
-  # 攻击成功的HTTP状态码定义：只保留2xx/3xx成功响应。
-  # 注意：403/404/405/500表示请求被拒绝或失败，不应视为"攻击成功"。
+  # 攻击成功的HTTP状态码定义
   success_status_codes:
   - '200'
   - '201'
@@ -46,20 +62,14 @@ ai_analysis:
   - '304'
   max_ai_analysis: 5
   high_risk_severity: high
-output_dir: output
-report_type: html
-report:
-  template: templates/report_template.html
-  output_format: html
-  output_directory: reports
-# ⚠️ 安全提示：生产环境中建议使用环境变量存储API密钥
-# 示例：export SSLOGS_AI_API_KEY="your-actual-api-key"
-deepseek:
-  api_key: demo_key_for_testing  # 示例密钥，生产环境请使用环境变量
-  model: deepseek-ai/DeepSeek-V3
-  base_url: https://api.siliconflow.cn/v1/chat/completions
-  timeout: 30
-  max_tokens: 2048
+
+# AI服务配置
+#
+# 安全建议：使用环境变量存储API密钥
+# export SSLOGS_AI_API_KEY="your-actual-api-key"
+#
+# 或者在本配置文件中使用环境变量引用：
+# api_key: ${SSLOGS_AI_API_KEY}
 ai:
   type: cloud
   local_provider: ollama
@@ -69,11 +79,38 @@ ai:
   retry_backoff: 2
   default_timeout: 30
 
-# 白名单配置：上下文分析阶段会用这些列表做误报抑制。
-# 缺省值见 core/rule_engine.py 的 _DEFAULT_* 常量；此处可按环境覆盖。
-# 注意：纯按 User-Agent 过滤爬虫存在被伪造绕过的风险，建议仅作辅助。
+# DeepSeek AI 配置
+deepseek:
+  api_key: YOUR_DEEPSEEK_API_KEY  # 替换为您的实际API密钥
+  model: deepseek-ai/DeepSeek-V3
+  base_url: https://api.siliconflow.cn/v1/chat/completions
+  timeout: 30
+  max_tokens: 2048
+
+# Ollama 本地AI配置
+ollama:
+  model: deepseek-r1:14b
+  base_url: http://localhost:11434/api/chat
+  timeout: 60
+
+# LM Studio 配置 (v3.1新增)
+lm_studio:
+  base_url: http://localhost:1234/v1/chat/completions
+  model: auto
+  timeout: 60
+  max_tokens: 2048
+  temperature: 0.7
+
+# 输出配置
+output_dir: output
+report_type: html
+report:
+  template: templates/report_template.html
+  output_format: html
+  output_directory: reports
+
+# 白名单配置
 whitelist:
-  # 安全爬虫/合法机器人 User-Agent 关键字（命中即跳过该条告警）
   safe_agents:
     - googlebot
     - bingbot
@@ -91,7 +128,6 @@ whitelist:
     - ahrefsbot
     - dotbot
     - archive.org_bot
-  # 静态资源扩展名（请求以这些结尾时通常非攻击目标）
   static_extensions:
     - .css
     - .js
@@ -112,7 +148,6 @@ whitelist:
     - .mov
     - .pdf
     - .xml
-  # 健康检查/监控端点
   health_paths:
     - /health
     - /healthcheck
@@ -124,13 +159,12 @@ whitelist:
     - /.well-known/
     - /robots.txt
     - /favicon.ico
-  # 内部服务请求来源（命中后降低优先级但不完全过滤）
   internal_ips:
     - 127.0.0.1
     - ::1
     - localhost
 
-# 增强的规则引擎配置
+# 规则引擎配置
 rule_engine:
   enable_context_analysis: true
   threat_scoring: true
@@ -147,10 +181,8 @@ performance:
   error_rate_threshold: 10
   memory_warning_threshold: 500
   performance_log_interval: 100
-ollama:
-  model: deepseek-r1:14b
-  base_url: http://localhost:11434/api/chat
-  timeout: 60
+
+# GeoIP数据库路径
 geoip_db_path: /Users/wooluo/DEV/SSlogs/config/GeoLite2-Country.mmdb
 
 # 日志配置

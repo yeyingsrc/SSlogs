@@ -1,56 +1,13 @@
 name: AI/ML驱动的异常行为检测
 pattern:
-  # 用户行为异常检测
-  user_agent:
-    # 异常User-Agent模式
-    '(bot|crawler|scraper|python|curl|wget).*?(?!googlebot|bingbot|slurp)'
-    '(Mozilla/5\.0).*?\(Windows NT 10\.0; Win64; x64\).*?(Chrome/\d+\.0\.0|Safari/\d+)'
-    '(Mozilla/4\.0|Mozilla/3\.0|Opera/9\.80).*?(compatible|MSIE)'
-
-  # 请求频率异常
-  request_path:
-    # 高频访问模式
-    '(/\w+){10,}'  # 超长路径
-    '(\?|&)(\w+=\w+){20,}'  # 超多参数
-
-  # 时间模式异常
-  request_headers:
-    # 非正常工作时间访问
-    '(X-Time|X-Local-Time):\s*([0-2]\d:[0-5]\d:(00-59|59))'
-    # 异常时区
-    '(X-Timezone|X-Zone):\s*(UTC\+14|UTC\-12|[A-Z]{3,4})'
-
-  # 会话行为异常
-  params:
-    # 会话跳跃异常
-    '(session|token|jwt).*(change|switch|jump|hop)'
-    # 设备指纹异常
-    '(fingerprint|device|hwid).*(change|modify|spoof|fake)'
-
-  # 访问模式异常
-  request_body:
-    # 批量数据访问
-    '{"(bulk|batch|multi|all|entire)":\s*(true|1|"yes")}'
-    '{"(limit|offset|size)":\s*(\d{4,}|9999|99999)}'
-    # 异常操作序列
-    '{"(action|operation)":\s*"(delete|remove|drop|truncate)".*"(confirm|bypass|force)":\s*"(true|1|yes)"}'
-
-  # 智能模式识别
-  combined_patterns:
-    # 机器学习检测标记
-    'ml_score:\s*(0\.\d{2,}|[9]\.\d+|risk|anomaly|suspicious)'
-    'ai_prediction:\s*(attack|malicious|abnormal|outlier)'
-    'behavior_baseline:\s*(deviated|violated|exceeded|breached)'
-
-  # 统计异常检测
-  response_codes:
-    # 异常状态码分布
-    '(\d{3,}|[5-9]\d{2}|[1-4]\d{3})'  # 非标准状态码
-
-  # 数据量异常
-  processing_time:
-    # 异常处理时间
-    '(\d{4,}|[1-9]\d{3}\.\d+)'  # 超长处理时间可能表示攻击
+  user_agent: '(?:(bot|crawler|scraper|python|curl|wget).*?(?!googlebot|bingbot|slurp))|(?:(Mozilla/5\.0).*?\(Windows NT 10\.0; Win64; x64\).*?(Chrome/\d+\.0\.0|Safari/\d+))|(?:(Mozilla/4\.0|Mozilla/3\.0|Opera/9\.80).*?(compatible|MSIE))'
+  request_path: '(?:(/\w+){10,})|(?:(\?|&)(\w+=\w+){20,})'
+  request_headers: '(?:(X-Time|X-Local-Time):\s*([0-2]\d:[0-5]\d:(00-59|59)))|(?:(X-Timezone|X-Zone):\s*(UTC\+14|UTC\-12|[A-Z]{3,4}))'
+  params: '(?:(session|token|jwt).*(change|switch|jump|hop))|(?:(fingerprint|device|hwid).*(change|modify|spoof|fake))'
+  request_body: '(?:{"(bulk|batch|multi|all|entire)":\s*(true|1|"yes")})|(?:{"(limit|offset|size)":\s*(\d{4,}|9999|99999)})|(?:{"(action|operation)":\s*"(delete|remove|drop|truncate)".*"(confirm|bypass|force)":\s*"(true|1|yes)"})'
+  combined_patterns: '(?:ml_score:\s*(0\.\d{2,}|[9]\.\d+|risk|anomaly|suspicious))|(?:ai_prediction:\s*(attack|malicious|abnormal|outlier))|(?:behavior_baseline:\s*(deviated|violated|exceeded|breached))'
+  response_codes: '(\d{3,}|[5-9]\d{2}|[1-4]\d{3})'
+  processing_time: '(\d{4,}|[1-9]\d{3}\.\d+)'
 
 severity: medium
 category: ai_ml_anomaly

@@ -4,7 +4,7 @@ import codecs
 import logging
 import hashlib
 from urllib.parse import urlparse, parse_qs
-from typing import Dict, Optional, List
+from typing import Dict, Optional, List, Any, Union
 from functools import lru_cache
 
 logger = logging.getLogger(__name__)
@@ -14,6 +14,8 @@ class LogValidationError(Exception):
     pass
 
 class LogParser:
+    """日志解析器，支持安全验证和多种日志格式"""
+
     # 安全配置
     MAX_LINE_LENGTH = 10000  # 最大日志行长度
     MAX_FIELD_VALUE_LENGTH = 1000  # 字段最大值长度
@@ -24,7 +26,12 @@ class LogParser:
         r'expression\s*\(',  # CSS表达式
     ]
 
-    def __init__(self, log_format_config):
+    def __init__(self, log_format_config: Dict[str, Any]) -> None:
+        """初始化日志解析器
+
+        Args:
+            log_format_config: 日志格式配置字典
+        """
         self.log_format_config = log_format_config
         self.fields = log_format_config.get('fields', {})
 
@@ -39,26 +46,35 @@ class LogParser:
             self.field_patterns = [field['regex'] for field in self.fields]
 
         # 正则表达式缓存（实例级缓存，避免lru_cache内存泄漏）
-        self._regex_cache = {}
-        self._field_pattern_cache = {}
-        self._pattern_cache = {}  # 新增：编译模式缓存
+        self._regex_cache: Dict[str, re.Pattern] = {}
+        self._field_pattern_cache: Dict[str, re.Pattern] = {}
+        self._pattern_cache: Dict[str, re.Pattern] = {}  # 新增：编译模式缓存
         self._cache_max_size = 128  # 缓存最大大小
 
         # 预编译危险模式检测
-        self.dangerous_regexes = [re.compile(pattern, re.IGNORECASE) for pattern in self.DANGEROUS_PATTERNS]
+        self.dangerous_regexes: List[re.Pattern] = [
+            re.compile(pattern, re.IGNORECASE) for pattern in self.DANGEROUS_PATTERNS
+        ]
 
-        self.regex_pattern = self._build_regex_pattern()
-        self.regex = re.compile(self.regex_pattern)
+        self.regex_pattern: str = self._build_regex_pattern()
+        self.regex: re.Pattern = re.compile(self.regex_pattern)
 
         # 统计信息
-        self.parsed_count = 0
-        self.failed_count = 0
-        self.blocked_count = 0
-        self.cache_hits = 0
-        self.cache_misses = 0
+        self.parsed_count: int = 0
+        self.failed_count: int = 0
+        self.blocked_count: int = 0
+        self.cache_hits: int = 0
+        self.cache_misses: int = 0
 
     def _build_regex_pattern(self) -> str:
-        """基于字段定义构建完整的正则表达式模式"""
+        """基于字段定义构建完整的正则表达式模式
+
+        Returns:
+            str: 编译后的正则表达式模式字符串
+
+        Raises:
+            ValueError: 如果日志格式配置中未定义字段
+        """
         if not self.field_patterns:
             raise ValueError("日志格式配置中未定义字段")
         
@@ -75,7 +91,14 @@ class LogParser:
         return '^' + full_pattern + '\\s*$'
 
     def validate_log_input(self, line: str) -> bool:
-        """验证日志输入的安全性"""
+        """验证日志输入的安全性
+
+        Args:
+            line: 日志行内容
+
+        Returns:
+            bool: 如果日志输入安全返回True，否则返回False
+        """
         if not line or not isinstance(line, str):
             return False
 
@@ -103,7 +126,14 @@ class LogParser:
         return True
 
     def sanitize_field_value(self, value: str) -> str:
-        """清理字段值，移除潜在危险内容"""
+        """清理字段值，移除潜在危险内容
+
+        Args:
+            value: 原始字段值
+
+        Returns:
+            str: 清理后的安全字段值
+        """
         if not value:
             return ''
 
@@ -119,8 +149,18 @@ class LogParser:
 
         return value.strip()
 
-    def parse_log_line(self, line: str) -> Optional[Dict[str, str]]:
-        """解析单条日志行并返回字典格式数据"""
+    def parse_log_line(self, line: str) -> Optional[Dict[str, Any]]:
+        """解析单条日志行并返回字典格式数据
+
+        Args:
+            line: 日志行内容
+
+        Returns:
+            Optional[Dict[str, Any]]: 解析后的日志字典，解析失败返回None
+
+        Raises:
+            LogValidationError: 当日志验证失败时
+        """
         try:
             # 输入验证
             if not self.validate_log_input(line):
@@ -165,8 +205,15 @@ class LogParser:
             self.failed_count += 1
             return None
 
-    def _validate_parsed_result(self, result: Dict[str, str]) -> bool:
-        """验证解析结果的基本完整性"""
+    def _validate_parsed_result(self, result: Dict[str, Any]) -> bool:
+        """验证解析结果的基本完整性
+
+        Args:
+            result: 解析后的日志字典
+
+        Returns:
+            bool: 如果验证通过返回True，否则返回False
+        """
         if not result:
             return False
 
@@ -196,7 +243,11 @@ class LogParser:
         return True
 
     def get_statistics(self) -> Dict[str, int]:
-        """获取解析统计信息"""
+        """获取解析统计信息
+
+        Returns:
+            Dict[str, int]: 包含解析成功、失败、阻塞数量的统计字典
+        """
         return {
             'parsed_count': self.parsed_count,
             'failed_count': self.failed_count,
@@ -205,7 +256,14 @@ class LogParser:
         }
 
     def _compile_field_pattern(self, pattern: str) -> re.Pattern:
-        """编译字段正则表达式（使用实例级缓存替代lru_cache避免内存泄漏）"""
+        """编译字段正则表达式（使用实例级缓存替代lru_cache避免内存泄漏）
+
+        Args:
+            pattern: 正则表达式模式字符串
+
+        Returns:
+            re.Pattern: 编译后的正则表达式对象
+        """
         # 检查实例级缓存
         if pattern in self._pattern_cache:
             self.cache_hits += 1
@@ -226,9 +284,16 @@ class LogParser:
         self._pattern_cache[pattern] = compiled
         return compiled
 
-    def _partial_parse(self, line: str) -> Optional[Dict[str, str]]:
-        """部分解析：逐个匹配字段"""
-        result = {}
+    def _partial_parse(self, line: str) -> Optional[Dict[str, Any]]:
+        """部分解析：逐个匹配字段
+
+        Args:
+            line: 日志行内容
+
+        Returns:
+            Optional[Dict[str, Any]]: 解析后的日志字典，如果没有任何字段匹配则返回None
+        """
+        result: Dict[str, Any] = {}
         remaining_line = line
 
         # 使用缓存的编译正则表达式
@@ -257,8 +322,12 @@ class LogParser:
         # 如果没有匹配到任何字段，返回None
         return result if any(result.values()) else None
 
-    def get_cache_statistics(self) -> Dict[str, int]:
-        """获取缓存统计信息"""
+    def get_cache_statistics(self) -> Dict[str, Union[int, float]]:
+        """获取缓存统计信息
+
+        Returns:
+            Dict[str, Union[int, float]]: 缓存命中率、未命中数、缓存大小等统计信息
+        """
         return {
             'cache_hits': self.cache_hits,
             'cache_misses': self.cache_misses,
@@ -266,15 +335,19 @@ class LogParser:
             'hit_rate': self.cache_hits / (self.cache_hits + self.cache_misses) if (self.cache_hits + self.cache_misses) > 0 else 0
         }
 
-    def clear_cache(self):
-        """清理缓存"""
+    def clear_cache(self) -> None:
+        """清理缓存并重置统计信息"""
         self._field_pattern_cache.clear()
         self._pattern_cache.clear()
         self.cache_hits = 0
         self.cache_misses = 0
 
-    def _extract_http_info(self, result: Dict[str, str]):
-        """从请求行提取HTTP信息"""
+    def _extract_http_info(self, result: Dict[str, Any]) -> None:
+        """从请求行提取HTTP信息
+
+        Args:
+            result: 解析后的日志字典，会被就地修改
+        """
         # 尝试多个可能的字段名
         request_fields = ['request_line', 'request_method', 'request']
         
@@ -303,8 +376,12 @@ class LogParser:
                 except Exception as e:
                     logger.warning(f"HTTP信息提取失败: {e}")
 
-    def _parse_url_params(self, result: Dict[str, str]):
-        """解析URL参数"""
+    def _parse_url_params(self, result: Dict[str, Any]) -> None:
+        """解析URL参数
+
+        Args:
+            result: 解析后的日志字典，会被就地修改
+        """
         try:
             url = result.get('url', '')
             if url:
@@ -318,8 +395,12 @@ class LogParser:
             logger.warning(f"URL参数解析失败: {e}")
             result['query_params'] = {}
 
-    def _parse_json_fields(self, result: Dict[str, str]):
-        """解析JSON数据字段"""
+    def _parse_json_fields(self, result: Dict[str, Any]) -> None:
+        """解析JSON数据字段
+
+        Args:
+            result: 解析后的日志字典，会被就地修改
+        """
         json_fields = ['json_data', 'data', 'payload']
         
         for field in json_fields:

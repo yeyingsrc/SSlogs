@@ -327,7 +327,20 @@ class AIAnalyzer:
         return base_framework.format(log_context=log_context)
 
     def analyze_log(self, log_context: str, attack_category: str = None, attack_name: str = None, threat_score: float = None) -> str:
-        """增强的AI分析 - 支持攻击类型特定的深度分析"""
+        """增强的AI分析 - 支持攻击类型特定的深度分析
+
+        Args:
+            log_context: 日志上下文内容
+            attack_category: 攻击类别（如 'injection', 'xss' 等）
+            attack_name: 攻击名称
+            threat_score: 威胁评分 (0.0-10.0)
+
+        Returns:
+            str: AI分析结果，当AI服务不可用时返回备用分析结果
+
+        Note:
+            此方法实现了降级策略：当AI服务不可用时，会自动使用结构化的备用分析
+        """
         if not log_context or not log_context.strip():
             return "无有效日志内容可供分析"
 
@@ -347,17 +360,21 @@ class AIAnalyzer:
 
         try:
             if self.ai_type == 'local' and self.local_provider == 'ollama':
-                return self._analyze_with_ollama(prompt)
+                try:
+                    return self._analyze_with_ollama(prompt)
+                except (AIServiceError, AIServiceUnavailableError) as e:
+                    self.logger.warning(f"Ollama分析失败，使用备用分析: {e}")
+                    return self._generate_fallback_analysis(attack_category, threat_score)
             else:
                 try:
                     return self._analyze_with_cloud(prompt)
-                except Exception as e:
-                    error_msg = f"云端AI分析失败: {str(e)}"
-                    self.logger.warning(error_msg)
+                except (AIAuthenticationError, AIServiceError, AIServiceUnavailableError) as e:
+                    self.logger.warning(f"云端AI分析失败，使用备用分析: {e}")
                     return self._generate_fallback_analysis(attack_category, threat_score)
 
         except Exception as e:
-            self.logger.error(f"AI分析失败: {e}")
+            # 捕获任何未预期的异常，确保总有返回值
+            self.logger.error(f"AI分析发生未预期错误，使用备用分析: {e}")
             return self._generate_fallback_analysis(attack_category, threat_score)
 
     def _generate_fallback_analysis(self, attack_category: str, threat_score: float) -> str:
@@ -472,13 +489,24 @@ class AIAnalyzer:
         return template
 
     def _analyze_with_ollama(self, prompt: str) -> str:
-        """使用本地Ollama模型进行分析"""
+        """使用本地Ollama模型进行分析
+
+        Args:
+            prompt: 分析提示词
+
+        Returns:
+            str: AI分析结果
+
+        Raises:
+            AIServiceError: 当AI服务不可用时
+            AIServiceUnavailableError: 当连接失败时
+        """
         payload = {
             "model": self.local_model,
             "messages": [{"role": "user", "content": prompt}],
             "stream": False
         }
-        
+
         try:
             response = self._make_request_with_retry(
                 self.local_base_url,
@@ -487,22 +515,40 @@ class AIAnalyzer:
                 self.ollama_config.get('timeout', 60)
             )
             result = response.json()
-            
+
             # 处理Ollama响应格式
             if 'message' in result and 'content' in result['message']:
                 return result['message']['content']
             else:
-                self.logger.error(f"Ollama响应格式异常: {result}")
-                return "AI分析结果格式异常"
+                error_msg = f"Ollama响应格式异常: {result}"
+                self.logger.error(error_msg)
+                raise AIServiceError(error_msg, error_code="INVALID_RESPONSE_FORMAT")
+
+        except AIServiceError:
+            # 重新抛出已知的AI服务错误
+            raise
         except Exception as e:
-            self.logger.error(f"Ollama分析失败: {e}")
-            return f"本地AI分析失败: {str(e)}"
+            error_msg = f"Ollama分析失败: {str(e)}"
+            self.logger.error(error_msg)
+            raise AIServiceUnavailableError(error_msg, error_code="OLLAMA_ERROR")
 
     def _analyze_with_cloud(self, prompt: str) -> str:
-        """使用云端模型进行分析"""
+        """使用云端模型进行分析
+
+        Args:
+            prompt: 分析提示词
+
+        Returns:
+            str: AI分析结果
+
+        Raises:
+            AIAuthenticationError: 当API密钥无效时
+            AIServiceUnavailableError: 当服务不可用时
+            AIServiceError: 当其他AI服务错误发生时
+        """
         if not self.api_key:
-            return "AI分析失败: 未配置API密钥"
-        
+            raise AIAuthenticationError("未配置API密钥，请检查环境变量 SSLOGS_AI_API_KEY 或配置文件")
+
         payload = {
             "model": self.cloud_model,
             "stream": False,
@@ -511,7 +557,7 @@ class AIAnalyzer:
             "top_p": 0.7,
             "messages": [{"role": "user", "content": prompt}]
         }
-        
+
         try:
             response = self._make_request_with_retry(
                 self.cloud_base_url,
@@ -520,7 +566,7 @@ class AIAnalyzer:
                 self.deepseek_config.get('timeout', 30)
             )
             result = response.json()
-            
+
             # 处理云端API响应格式
             if 'choices' in result and len(result['choices']) > 0:
                 message = result['choices'][0].get('message', {})
@@ -528,14 +574,21 @@ class AIAnalyzer:
                 if content:
                     return content
                 else:
-                    self.logger.error("AI返回内容为空")
-                    return "AI分析结果为空"
+                    error_msg = "AI返回内容为空"
+                    self.logger.error(error_msg)
+                    raise AIServiceError(error_msg, error_code="EMPTY_RESPONSE")
             else:
-                self.logger.error(f"云端API响应格式异常: {result}")
-                return "AI分析结果格式异常"
+                error_msg = f"云端API响应格式异常: {result}"
+                self.logger.error(error_msg)
+                raise AIServiceError(error_msg, error_code="INVALID_RESPONSE_FORMAT")
+
+        except (AIAuthenticationError, AIServiceError, AIServiceUnavailableError):
+            # 重新抛出已知的AI服务错误
+            raise
         except Exception as e:
-            self.logger.error(f"云端AI分析失败: {e}")
-            return f"云端AI分析失败: {str(e)}"
+            error_msg = f"云端AI分析失败: {str(e)}"
+            self.logger.error(error_msg)
+            raise AIServiceUnavailableError(error_msg, error_code="CLOUD_AI_ERROR")
 
     def generate_parsing_rules(self, log_sample: str) -> Dict[str, Any]:
         """根据日志样例生成解析规则"""

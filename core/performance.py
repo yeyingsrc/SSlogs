@@ -4,9 +4,13 @@ import psutil
 import os
 import threading
 from functools import wraps
-from typing import Dict, Any, Callable
+from typing import Dict, Any, Callable, TypeVar, ParamSpec
 from dataclasses import dataclass, field
 from collections import defaultdict, deque
+
+# Type variables for better decorator type hints
+P = ParamSpec('P')
+T = TypeVar('T')
 
 logger = logging.getLogger(__name__)
 
@@ -33,7 +37,7 @@ class PerformanceTracker:
         self.process = psutil.Process(os.getpid())
         self.initial_memory = self.process.memory_info().rss / 1024 / 1024  # MB
 
-    def record_metric(self, name: str, value: float, unit: str = "ms", metadata: Dict[str, Any] = None):
+    def record_metric(self, name: str, value: float, unit: str = "ms", metadata: Dict[str, Any] = None) -> None:
         """记录性能指标"""
         with self.lock:
             metric = PerformanceMetric(
@@ -44,7 +48,7 @@ class PerformanceTracker:
             )
             self.metrics[name].append(metric)
 
-    def start_timer(self, name: str):
+    def start_timer(self, name: str) -> None:
         """开始计时"""
         with self.lock:
             self.timers[name] = time.time()
@@ -62,7 +66,7 @@ class PerformanceTracker:
             self.record_metric(name, duration, unit, metadata)
             return duration
 
-    def increment_counter(self, name: str, increment: int = 1):
+    def increment_counter(self, name: str, increment: int = 1) -> None:
         """增加计数器"""
         with self.lock:
             self.counters[name] += increment
@@ -114,7 +118,7 @@ class PerformanceTracker:
 
             return stats
 
-    def reset(self):
+    def reset(self) -> None:
         """重置所有统计数据"""
         with self.lock:
             self.metrics.clear()
@@ -124,13 +128,13 @@ class PerformanceTracker:
 # 全局性能跟踪器实例
 global_tracker = PerformanceTracker()
 
-def performance_monitor(name: str = None, unit: str = "ms", track_memory: bool = False):
+def performance_monitor(name: str = None, unit: str = "ms", track_memory: bool = False) -> Callable[[Callable[P, T]], Callable[P, T]]:
     """性能监控装饰器"""
-    def decorator(func: Callable) -> Callable:
+    def decorator(func: Callable[P, T]) -> Callable[P, T]:
         metric_name = name or f"{func.__module__}.{func.__qualname__}"
 
         @wraps(func)
-        def wrapper(*args, **kwargs):
+        def wrapper(*args: P.args, **kwargs: P.kwargs) -> T:
             # 开始计时
             global_tracker.start_timer(metric_name)
 
@@ -181,11 +185,11 @@ def performance_monitor(name: str = None, unit: str = "ms", track_memory: bool =
         return wrapper
     return decorator
 
-def memory_monitor(threshold_mb: float = 100.0):
+def memory_monitor(threshold_mb: float = 100.0) -> Callable[[Callable[P, T]], Callable[P, T]]:
     """内存监控装饰器"""
-    def decorator(func: Callable) -> Callable:
+    def decorator(func: Callable[P, T]) -> Callable[P, T]:
         @wraps(func)
-        def wrapper(*args, **kwargs):
+        def wrapper(*args: P.args, **kwargs: P.kwargs) -> T:
             # 获取开始时的内存使用
             try:
                 process = psutil.Process(os.getpid())
@@ -212,13 +216,13 @@ def memory_monitor(threshold_mb: float = 100.0):
         return wrapper
     return decorator
 
-def error_rate_monitor(window_size: int = 100):
+def error_rate_monitor(window_size: int = 100) -> Callable[[Callable[P, T]], Callable[P, T]]:
     """错误率监控装饰器"""
-    def decorator(func: Callable) -> Callable:
+    def decorator(func: Callable[P, T]) -> Callable[P, T]:
         metric_name = f"error_rate_{func.__name__}"
 
         @wraps(func)
-        def wrapper(*args, **kwargs):
+        def wrapper(*args: P.args, **kwargs: P.kwargs) -> T:
             global_tracker.increment_counter(f"{metric_name}_total")
 
             try:
@@ -245,7 +249,11 @@ def error_rate_monitor(window_size: int = 100):
     return decorator
 
 def get_performance_summary() -> str:
-    """获取性能摘要报告"""
+    """获取性能摘要报告
+
+    Returns:
+        str: 格式化的性能摘要报告字符串
+    """
     stats = global_tracker.get_all_stats()
 
     summary_lines = ["性能监控摘要报告", "=" * 50]

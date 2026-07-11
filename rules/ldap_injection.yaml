@@ -1,5 +1,27 @@
-name: LDAP注入攻击检测
-pattern: '(\(|\)|&|\||!|=|\*|~|>=|<=|\\*|\\(|\\))'
+name: "LDAP注入攻击检测"
+pattern:
+  # LDAP注入的核心特征：特殊字符与查询语法的组合，而非单个特殊字符。
+  # 单独的 ( & = * 等是正常URL/查询里的合法字符，不能单独判定为攻击。
+  params:
+    # LDAP 注入经典载荷：*)(  *)(uid=*  )(cn=*) 等
+    "(?i)(\\*[\\)\\(][\\w\\*\\(\\)=\\s]*[\\)\\(]\\*?|\\)[\\(\\*]|\\(\\|[\\w\\s]+=|\\(&[\\w\\s]+=|\\)\\([a-z]+=\\*|\\*\\)\\(uid=|\\*\\)\\(userAccountControl=|\\*\\)\\(objectClass=|\\*\\)\\(sAMAccountName=)"
+  # LDAP 查询关键字（需配合上下文，不单独触发）
+  params_keywords:
+    "(?i)(objectClass|sAMAccountName|userPrincipalName|distinguishedName|memberOf|userAccountControl|primaryGroupID|objectCategory|objectSid)[\\s\\*\\(\\)=]"
 severity: high
 category: injection
-description: 检测常见的LDAP注入攻击模式，包括特殊字符和逻辑运算符的滥用
+confidence_levels:
+  high:
+    - params
+  medium:
+    - params_keywords
+description: |
+  检测LDAP注入攻击，匹配LDAP查询语法的特征组合（如 *)(  )(uid=* ）。
+  不再匹配单个特殊字符，避免正常查询参数里的 ( & = 被误判。
+cwe: "CWE-90"
+owasp: "A03:2021 - Injection"
+attack_patterns:
+  - "LDAP注入"
+  - "认证绕过"
+  - "目录遍历"
+impact: "可能导致认证绕过、权限提升或目录信息泄露"

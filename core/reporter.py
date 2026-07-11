@@ -2,19 +2,30 @@ import json
 import os
 import logging
 from datetime import datetime
-from typing import List, Dict, Any, Optional
+from typing import List, Dict, Any, Optional, Union
 from pathlib import Path
 from functools import lru_cache
+from dataclasses import dataclass
 
 logger = logging.getLogger(__name__)
 
 class ReportGenerator:
-    def __init__(self, output_dir: str = "output"):
+    """报告生成器 - 支持多种格式的安全分析报告生成"""
+
+    def __init__(self, output_dir: str = "output") -> None:
+        """初始化报告生成器
+
+        Args:
+            output_dir: 报告输出目录路径
+
+        Raises:
+            OSError: 当无法创建输出目录时
+        """
         self.output_dir = Path(output_dir)
         self.output_dir.mkdir(parents=True, exist_ok=True)
         self.templates_dir = Path(__file__).parent / "templates"
         self.templates_dir.mkdir(exist_ok=True)
-        self._stats_cache = {}
+        self._stats_cache: Dict[str, Any] = {}
 
     def generate_report(self, matched_logs: List[Dict[str, Any]], ai_results: List[str],
                        report_type: str = "html", internal_ips: Optional[Dict[str, int]] = None,
@@ -77,7 +88,11 @@ class ReportGenerator:
             raise
 
     def _load_css_styles(self) -> str:
-        """加载CSS样式"""
+        """加载CSS样式
+
+        Returns:
+            str: CSS样式内容
+        """
         css_file = self.templates_dir / "styles.css"
         if css_file.exists():
             return css_file.read_text(encoding='utf-8')
@@ -86,7 +101,11 @@ class ReportGenerator:
             return self._get_default_css()
 
     def _get_default_css(self) -> str:
-        """获取默认CSS样式"""
+        """获取默认CSS样式
+
+        Returns:
+            str: 默认CSS样式内容
+        """
         return """
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 20px; background-color: #f5f5f5; }
         .container { max-width: 1200px; margin: 0 auto; background-color: white; padding: 20px; border-radius: 10px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
@@ -125,7 +144,15 @@ class ReportGenerator:
         """
 
     def _build_html_header(self, metadata: Dict[str, Any], css_content: str) -> str:
-        """构建HTML头部"""
+        """构建HTML头部
+
+        Args:
+            metadata: 报告元数据
+            css_content: CSS样式内容
+
+        Returns:
+            str: HTML头部内容
+        """
         return f"""<!DOCTYPE html>
 <html>
 <head>
@@ -142,7 +169,14 @@ class ReportGenerator:
         </div>"""
 
     def _build_stats_section(self, metadata: Dict[str, Any]) -> str:
-        """构建统计信息部分"""
+        """构建统计信息部分
+
+        Args:
+            metadata: 报告元数据
+
+        Returns:
+            str: 统计信息HTML部分
+        """
         severity_stats = metadata['severity_stats']
         return f"""
         <div class='stats-grid'>
@@ -165,7 +199,14 @@ class ReportGenerator:
         </div>"""
 
     def _build_attack_types_section(self, attack_type_stats: List[Dict[str, Any]]) -> str:
-        """构建攻击类型TOP10部分"""
+        """构建攻击类型TOP10部分
+
+        Args:
+            attack_type_stats: 攻击类型统计列表
+
+        Returns:
+            str: 攻击类型TOP10 HTML部分
+        """
         table_rows = ""
         if attack_type_stats:
             total_attacks = sum(stat['count'] for stat in attack_type_stats)
@@ -202,7 +243,14 @@ class ReportGenerator:
         </div>"""
 
     def _build_ip_statistics_section(self, ip_stats: Dict[str, Any]) -> str:
-        """构建IP统计部分"""
+        """构建IP统计部分
+
+        Args:
+            ip_stats: IP统计数据
+
+        Returns:
+            str: IP统计HTML部分
+        """
         external_rows = self._build_external_ip_rows(ip_stats['external_ip_details'])
         internal_rows = self._build_internal_ip_rows(ip_stats['internal_ips'])
         
@@ -241,7 +289,14 @@ class ReportGenerator:
         </div>"""
 
     def _build_external_ip_rows(self, external_ip_details: List[Dict[str, Any]]) -> str:
-        """构建外网IP表格行"""
+        """构建外网IP表格行
+
+        Args:
+            external_ip_details: 外网IP详情列表
+
+        Returns:
+            str: 外网IP表格HTML行
+        """
         if not external_ip_details:
             return "<tr><td colspan='4' class='no-data'>无外网IP访问记录</td></tr>"
         
@@ -258,7 +313,14 @@ class ReportGenerator:
         return rows
 
     def _build_internal_ip_rows(self, internal_ips: Dict[str, int]) -> str:
-        """构建内网IP表格行"""
+        """构建内网IP表格行
+
+        Args:
+            internal_ips: 内网IP统计字典
+
+        Returns:
+            str: 内网IP表格HTML行
+        """
         if not internal_ips:
             return "<tr><td colspan='3' class='no-data'>无内网IP访问记录</td></tr>"
         

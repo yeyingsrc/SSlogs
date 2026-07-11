@@ -1,85 +1,10 @@
 name: 零信任架构安全检测
 pattern:
-  # 身份验证绕过检测
-  request_headers:
-    # 异常认证绕过
-    '(X-Auth|X-Login|X-Token):\s*(bypass|skip|override|none|NULL)'
-    '(Authorization):\s*(Basic\s*[A-Za-z0-9+/]{20,}={0,2})'  # 弱密码Base64
-    '(X-Forwarded-User|X-Remote-User):\s*(admin|root|administrator)'
-
-  # 多因子认证绕过
-  params:
-    # MFA绕过尝试
-    '(mfa|2fa|totp|otp|second.*factor).*(bypass|disable|skip|override)'
-    '(verification|validate|confirm).*(skip|bypass|auto|instant)'
-    '(device|phone|email).*(trust|bypass|whitelist|skip)'
-
-  # 设备信任异常
-  request_headers:
-    # 设备指纹异常
-    '(X-Device|X-Fingerprint|X-Hardware):.*?(changed|new|unknown|untrusted)'
-    '(X-Platform|X-OS|X-Browser):.*?(unknown|anonymized|hidden)'
-    '(X-Mobile|X-Device-Type):\s*(rooted|jailbroken|compromised)'
-
-  # 权限提升检测
-  params:
-    # 权限提升尝试
-    '(role|permission|privilege|access).*(escalate|elevate|increase|upgrade)'
-    '(admin|root|super|sudo).*(access|login|privilege|role)'
-    '(user|account).*(impersonate|switch|takeover|hijack)'
-
-  # 会话安全检测
-  request_headers:
-    # 会话劫持尝试
-    '(X-Session|X-Token|X-JWT):.*?(steal|hijack|reuse|share)'
-    '(Cookie):\s*(JSESSIONID|PHPSESSID|ASP.NET_SessionId).*?(multiple|shared|stolen)'
-    '(X-Real-IP|X-Forwarded-For):.*?(spoof|fake|anonymized|proxy)'
-
-  # 访问控制绕过
-  request_path:
-    # 访问控制绕过
-    '/(admin|management|control|config)/.*?(bypass|skip|override|direct)'
-    '/(api|service)/.*?(auth|login|verify).*(bypass|disable|none)'
-    '/(user|account|profile)/.*?(force|override|admin)'
-
-  # 网络段访问异常
-  src_ip:
-    # 跨网段访问
-    '(192\.168\.\d+\.\d+).*?(10\.\d+\.\d+\.\d+|172\.\d+\.\d+\.\d+)'  # 内网跨段
-    '(10\.\d+\.\d+\.\d+).*?(192\.168\.\d+\.\d+|172\.\d+\.\d+\.\d+)'
-    '(172\.\d+\.\d+\.\d+).*?(192\.168\.\d+\.\d+|10\.\d+\.\d+\.\d+)'
-
-  # 异常地理位置访问
-  request_headers:
-    # 地理位置异常
-    '(X-Country|X-GeoIP|X-Location):\s*(CN|RU|KP|IR|AF).*?(US|EU|UK|CA|AU)'  # 跨国访问
-    '(X-Timezone|X-Zone):\s*(UTC\+8|UTC\+5:30).*?(UTC\-5|UTC\+0|UTC\+1)'  # 跨时区
-
-  # 服务访问异常
-  request_path:
-    # 服务间访问异常
-    '/(internal|private|service)/.*?(external|public|internet)'
-    '/(microservice|api)/.*?(direct|bypass|gateway|skip)'
-
-  # 身份验证异常
-  params:
-    # 认证失败模式
-    '(login|auth|signin).*(fail|error|invalid|denied).*(multiple|repeat|brute)'
-    '(password|pass|pwd).*(reset|recover|change).*(multiple|bulk|admin)'
-    '(account|user).*(lock|suspend|disable).*(bypass|override|force)'
-
-  # 信任评估异常
-  request_body:
-    # 信任评分异常
-    '{"(trust|risk|score|confidence)":\s*"(low|high|critical|dangerous)"}'
-    '{"(access|permission|grant)":\s*"(auto|instant|bypass|skip)"}'
-    '{"(verify|validate|check)":\s*"(false|skip|disabled|none)"}'
-
-  # 环境上下文异常
-  request_headers:
-    # 环境异常
-    '(X-Environment|X-Context):\s*(unknown|untrusted|public|external)'
-    '(X-Network|X-Segment):\s*(untrusted|guest|public|dmz)'
+  request_headers: '(?:(X-Auth|X-Login|X-Token):\s*(bypass|skip|override|none|NULL))|(?:(Authorization):\s*(Basic\s*[A-Za-z0-9+/]{20,}={0,2}))|(?:(X-Forwarded-User|X-Remote-User):\s*(admin|root|administrator))|(?:(X-Device|X-Fingerprint|X-Hardware):.*?(changed|new|unknown|untrusted))|(?:(X-Platform|X-OS|X-Browser):.*?(unknown|anonymized|hidden))|(?:(X-Mobile|X-Device-Type):\s*(rooted|jailbroken|compromised))|(?:(X-Session|X-Token|X-JWT):.*?(steal|hijack|reuse|share))|(?:(Cookie):\s*(JSESSIONID|PHPSESSID|ASP.NET_SessionId).*?(multiple|shared|stolen))|(?:(X-Real-IP|X-Forwarded-For):.*?(spoof|fake|anonymized|proxy))|(?:(X-Country|X-GeoIP|X-Location):\s*(CN|RU|KP|IR|AF).*?(US|EU|UK|CA|AU))|(?:(X-Timezone|X-Zone):\s*(UTC\+8|UTC\+5:30).*?(UTC\-5|UTC\+0|UTC\+1))|(?:(X-Environment|X-Context):\s*(unknown|untrusted|public|external))|(?:(X-Network|X-Segment):\s*(untrusted|guest|public|dmz))'
+  params: '(?:(mfa|2fa|totp|otp|second.*factor).*(bypass|disable|skip|override))|(?:(verification|validate|confirm).*(skip|bypass|auto|instant))|(?:(device|phone|email).*(trust|bypass|whitelist|skip))|(?:(role|permission|privilege|access).*(escalate|elevate|increase|upgrade))|(?:(admin|root|super|sudo).*(access|login|privilege|role))|(?:(user|account).*(impersonate|switch|takeover|hijack))|(?:(login|auth|signin).*(fail|error|invalid|denied).*(multiple|repeat|brute))|(?:(password|pass|pwd).*(reset|recover|change).*(multiple|bulk|admin))|(?:(account|user).*(lock|suspend|disable).*(bypass|override|force))'
+  request_path: '(?:/(admin|management|control|config)/.*?(bypass|skip|override|direct))|(?:/(api|service)/.*?(auth|login|verify).*(bypass|disable|none))|(?:/(user|account|profile)/.*?(force|override|admin))|(?:/(internal|private|service)/.*?(external|public|internet))|(?:/(microservice|api)/.*?(direct|bypass|gateway|skip))'
+  src_ip: '(?:(192\.168\.\d+\.\d+).*?(10\.\d+\.\d+\.\d+|172\.\d+\.\d+\.\d+))|(?:(10\.\d+\.\d+\.\d+).*?(192\.168\.\d+\.\d+|172\.\d+\.\d+\.\d+))|(?:(172\.\d+\.\d+\.\d+).*?(192\.168\.\d+\.\d+|10\.\d+\.\d+\.\d+))'
+  request_body: '(?:{"(trust|risk|score|confidence)":\s*"(low|high|critical|dangerous)"})|(?:{"(access|permission|grant)":\s*"(auto|instant|bypass|skip)"})|(?:{"(verify|validate|check)":\s*"(false|skip|disabled|none)"})'
 
 severity: high
 category: zero_trust

@@ -1,7 +1,9 @@
 name: "目录爆破和暴力破解检测"
 pattern:
-  request_path: "(?i).*(admin|login|wp-admin|phpmyadmin|adminer|manager|console|dashboard|panel|cpanel|plesk|webmin|pma|myadmin|sql|database|db|backup|config|setup|install|test|dev|staging|tmp|temp|old|bak|orig|copy|backup|archive|dump|export|logs|log)"
-  user_agent: "(?i)(gobuster|dirb|dirbuster|ffuf|wfuzz|feroxbuster|rustbuster|dirsearch|dirmap|brute|force|crack|enum|scan|fuzz|burst|buster)"
+  # 仅匹配明确的敏感管理后台/备份路径，不用 .*(login|api|test|log) 等普通词通配
+  request_path: "(?i)/(phpmyadmin|adminer|wp-admin|wp-login|cpanel|plesk|webmin|pma|myadmin|manager/html|jmx-console|jenkins|actuator|/.git/|/.svn/|/.env|/backup|/database.sql|/dump.sql|/config.php|/web.config)(/|$|\\.)"
+  # 目录爆破工具UA（仅明确工具名，去掉 brute|force|scan 等易误伤的单词）
+  user_agent: "(?i)(gobuster|dirb|dirbuster|ffuf|wfuzz|feroxbuster|rustbuster|dirsearch|dirmap|brutus|dirbuster|httpx|ffuf)"
 severity: "high"
 category: "brute_force"
 description: "检测目录爆破、暴力破解和敏感路径枚举攻击"

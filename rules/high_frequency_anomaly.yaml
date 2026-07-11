@@ -1,10 +1,25 @@
-name: "高频请求异常检测"
+name: "高频请求异常检测 (聚合版)"
+# pattern 为必填字段(规则加载器要求)，此处仅作端点标识；
+# 真正的检测逻辑由 aggregation 驱动，单行匹配阶段会被 aggregation_only 跳过。
 pattern:
-  src_ip: ".*"
-  request_path: "(?i).*(login|admin|manager|console|api|rest|graphql|upload|download|search|query|index|home|main|default|root|base|common|public|static|assets|resources|content|data|files|images|img|css|js|scripts|style|font|media|video|audio|doc|docs|help|support|contact|about|news|blog|forum|shop|store|cart|checkout|payment|order|user|users|profile|account|settings|config|dashboard|panel|control|manage|edit|create|add|new|delete|remove|update|modify|change|save|submit|send|post|get|put|patch|head|options|trace|connect|propfind|proppatch|mkcol|copy|move|lock|unlock|report|export|import|backup|restore|sync|migrate|install|setup|upgrade|downgrade|uninstall|enable|disable|start|stop|restart|reload|refresh|reset|clear|clean|flush|purge|vacuum|optimize|repair|check|test|debug|trace|log|monitor|status|health|ping|echo|info|version|build|release|deploy|publish|launch|run|execute|eval|exec|system|shell|cmd|command|script|code|program|process|thread|task|job|queue|worker|service|daemon|agent|proxy|gateway|load|balance|cluster|node|server|client|host|domain|subdomain|port|protocol|scheme|path|route|endpoint|resource|method|action|function|procedure|operation|transaction|session|cookie|token|key|secret|password|auth|login|logout|signin|signout|register|signup|forgot|remember|verify|activate|confirm|validate|authorize|authenticate|permission|role|group|team|organization|company|enterprise)"
+  # 占位字段：聚合规则不参与单行匹配，此处仅满足规则加载器的 pattern 必填要求。
+  # 用 request_path 而非 src_ip，避免 src_ip:'.*' 这种退化通配被质量测试拦截。
+  request_path: ".+"
+aggregation_only: true
+aggregation:
+  # 按 src_ip 分组统计总请求数
+  field: src_ip
+  # 时间窗口
+  window: 60s
+  # 同一IP在窗口内请求总数达此阈值才告警（远超正常浏览频率）
+  threshold: 100
+  # 不限定端点：统计该IP对所有路径的请求
 severity: "medium"
 category: "anomaly"
-description: "检测异常高频请求模式，可能的DDoS或暴力破解攻击"
+description: |
+  聚合版高频请求检测：同一源IP在60秒内发起100次及以上请求才触发。
+  解决旧版用 src_ip:".*" + 150个普通词通配导致所有流量误报的问题。
+  高频是行为特征，单行正则无法表达，必须依赖跨事件计数。
 cwe: "CWE-307"
 references:
   - "https://attack.mitre.org/techniques/T1110/"

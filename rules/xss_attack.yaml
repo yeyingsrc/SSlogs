@@ -7,7 +7,7 @@ pattern:
   params_events: "(?i)(\\bon\\w+\\s*=\\s*[\\\"\\'\\`]?[\\s\\S]*?(?:alert|confirm|prompt|eval|Function|setTimeout|setInterval|fetch|XMLHttpRequest|document\\.|window\\.)[\\s\\S]*?[\\\"\\'\\`]?[\\s/>])"
 
   # DOM XSS危险函数 - 中等置信度
-  params_dom: "(?i)(document\\.(write|writeln)\\s*\\(|\\.innerHTML\\s*=\\s*[^\\n]+|\\.outerHTML\\s*=\\s*[^\\n]+|insertAdjacentHTML\\s*\\(|\\.insertAdjacentHTML|document\\.(cookie|location|URL|referrer|domain)\\s*[=[]"
+  params_dom: "(?i)(document\\.(write|writeln)\\s*\\(|\\.innerHTML\\s*=\\s*[^\\n]+|\\.outerHTML\\s*=\\s*[^\\n]+|insertAdjacentHTML\\s*\\(|\\.insertAdjacentHTML|document\\.(cookie|location|URL|referrer|domain)\\s*[=[])"
 
   # JavaScript危险函数 - 中等置信度
   params_js_funcs: "(?i)(\\beval\\s*\\(|new\\s+Function\\s*\\(|setTimeout\\s*\\(\\s*[\\\"\\'\\`]|setInterval\\s*\\(\\s*[\\\"\\'\\`]|constructor\\s*\\(\\s*\\)|window\\[|document\\[|\\[[\\s\\S]*\\]\\(\\s*[\\\"\\'\\`])"

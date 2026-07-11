@@ -1,63 +1,16 @@
 name: 威胁情报自动检测与IOC匹配
 pattern:
-  # 恶意IP地址检测
-  src_ip: '(1[0-9]{2}|20[0-9]|21[0-9])\.\d+\.\d+\.\d+|(192\.168\.\d+\.\d+|10\.\d+\.\d+\.\d+|172\.1[6-9]\.\d+\.\d+|172\.2[0-9]\.\d+\.\d+|172\.3[0-1]\.\d+\.\d+)|(0\.0\.0\.0|127\.0\.0\.1|255\.255\.255\.255)'
-
-  # 恶意域名检测
-  request_path: '.*(phishing|malware|botnet|c2|command).*\.(com|net|org|info|biz|ru|cn|tk|ml)|.*(0-9a-f]{32,64})\.(com|net|org|info)|.*(tk|ml|ga|cf|men|gq)'
-
-  # 恶意文件哈希检测
-  params:
-    # 恶意软件哈希
-    '(hash|md5|sha1|sha256)=.*?[a-fA-F0-9]{32,64}'
-    '(file|download|document)=.*?[a-fA-F0-9]{32,64}'
-    '(signature|checksum)=.*?[a-fA-F0-9]{32,64}'
-
-  # 恶意URL模式
-  request_path:
-    # 恶意URL结构
-    '.*\/(malware|virus|trojan|backdoor|exploit|payload)\/.*'
-    '.*\/(bot|c2|command|control|beacon)\/.*'
-    '.*\/(shell|webshell|backdoor|cmd)\/.*'
-
-  # 恶意User-Agent检测
-  user_agent:
-    # 已知攻击工具
-    '(sqlmap|nmap|nikto|dirb|gobuster|burp|metasploit|nessus)'
-    '(python-requests|curl|wget|powershell|cmd\.exe|bash|sh)'
-    '(bot|crawler|spider|scraper|harvester|extractor)'
-
-  # APT组织指纹
-  user_agent:
-    # APT工具特征
-    '(APT|Lazarus|Fancy Bear|Cozy Bear|Equation Group)'
-    '(Stuxnet|Flame|Duqu|Gauss|RedLeaves|PlugX)'
-    '(Cobalt Strike|Beacon|Empire|PoshC2|Metasploit)'
-
-  # 命令与控制通信
-  request_headers:
-    # C2通信特征
-    '(X-Command|X-Control|X-Beacon|X-C2):'
-    '(X-Task|X-Job|X-Update|X-Config):'
-    '(User-Agent):\s*(Mozilla/5\.0 \(compatible;.*bot.*\)|.*curl.*|.*wget.*)'
-
-  # 威胁情报标签
-  request_body:
-    # IOC标记
-    '{"(ioc|threat|malicious|evil|bad)":\s*"(true|1|yes)"}'
-    '{"(confidence|severity|risk)":\s*"(high|critical|dangerous)"}'
-    '{"(source|provider|feed)":\s*"(threat.*intel|misp|alienvault|virustotal)"}'
-
-  # 地缘政治威胁
-  request_headers:
-    # 高风险地区
-    '(X-Country|X-Region|X-GeoIP):\s*(KP|IR|RU|CN|SY|AF|PK|BD)'
-    '(X-ASN|X-Network):\s*(AS\d+)'  # 已知恶意ASN
-
-  # 恶意证书检测
-  request_headers:
-    # 异常证书
-    '(X-SSL|X-Certificate|X-TLS):.*?(expired|invalid|self-signed|malicious)'
+  # 注意：src_ip 不再用正则匹配（把所有公网IP当恶意无意义，需真实IOC库）。
+  # 恶意域名/路径特征（收敛到明确模式，避免 .*tk|ml|cf 等通配误伤正常路径）
+  request_path: '(?i)/(malware|virus|trojan|backdoor|exploit|payload|webshell|c99|r57|wso)/(?:download|fetch|get|exec)|/\.(well-known|hidden)/(c2|beacon|shell)|\.(tk|ml|ga|cf|gq|men)/?$'
+  # 文件哈希类IOC（md5/sha256格式的可疑下载）
+  params: '(?:(hash|md5|sha1|sha256)=.*?[a-fA-F0-9]{32,64})|(?:(file|download|document)=.*?[a-fA-F0-9]{32,64})|(?:(signature|checksum)=.*?[a-fA-F0-9]{32,64})'
+  # 已知攻击工具和APT组织 User-Agent（仅明确工具，不含通用的 curl/wget/bot）
+  user_agent: '(?i)(sqlmap|nmap|nikto|metasploit|meterpreter|cobalt.?strike|nessus|Stuxnet|Flame|Duqu|PlugX|CobaltStrike|PoshC2)'
+  # C2通信相关可疑请求头
+  request_headers: '(?i)(X-Command|X-Control|X-Beacon|X-C2|X-Task|X-Job|X-Update):'
+  # 威胁情报标记类请求体
+  request_body: '(?:\{"(ioc|threat|malicious|evil)":\s*"(true|1|yes)"})|(?:\{"(source|provider|feed)":\s*"(threat.*intel|misp|alienvault|virustotal)"})'
 
 severity: critical
 category: threat_intelligence

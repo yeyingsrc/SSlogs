@@ -25,3 +25,22 @@ line-profiler>=4.0.0         # 代码行级性能分析
 
 # 调试工具
 ipdb>=0.13.0                 # 增强的调试器
+
+# Pre-commit hooks
+pre-commit>=3.3.0            # Git pre-commit框架
+
+# 高级测试工具
+pytest-xdist>=3.3.0          # 并行测试执行
+pytest-asyncio>=0.21.0        # 异步测试支持
+
+# 安全扫描
+bandit>=1.7.5                 # 安全漏洞扫描
+safety>=2.3.0                # 依赖安全检查
+
+# 代码复杂度分析
+radon>=6.0.0                 # 代码复杂度分析
+ mccabe>=0.7.0               # 圈复杂度检查
+
+# 文档增强
+sphinx-autodoc-typehints>=1.23.0  # 类型提示支持
+sphinxcontrib-apidoc>=0.3.0       # API文档自动生成

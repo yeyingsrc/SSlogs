@@ -49,7 +49,7 @@ class LogHunter:
 
         try:
             self.parser = LogParser(self.config['log_format'])
-            self.rule_engine = RuleEngine(self.config['rule_dir'])
+            self.rule_engine = RuleEngine(self.config['rule_dir'], config=self.config)
         except (ParsingError, Exception) as e:
             self.logger.error(f"初始化解析器或规则引擎失败: {e}")
             raise LogAnalysisError(f"组件初始化失败: {e}")
@@ -93,40 +93,6 @@ class LogHunter:
         signal_name = 'SIGINT' if signum == signal.SIGINT else 'SIGTERM'
         self.logger.info(f"\n收到信号 {signal_name}，正在优雅关闭...")
         self.interrupted = True
-
-    def _load_config(self, config_path: str) -> Dict[str, Any]:
-        if not os.path.exists(config_path):
-            raise FileNotFoundError(f"配置文件不存在: {config_path}")
-        with open(config_path, 'r', encoding='utf-8') as f:
-            config = yaml.safe_load(f)
-        
-        # 设置默认值以提高健壮性
-        if not config:
-            config = {}
-            
-        # 确保必要字段存在
-        required_fields = ['log_format', 'log_path', 'rule_dir', 'output_dir']
-        for field in required_fields:
-            if field not in config:
-                raise ValueError(f"配置文件缺少必要字段: {field}")
-        
-        # 设置默认值
-        config.setdefault('analysis', {})
-        config['analysis'].setdefault('batch_size', 1000)
-        config['analysis'].setdefault('max_events', 100)
-        config['analysis'].setdefault('memory_limit_mb', 500)
-        
-        config.setdefault('ai_analysis', {})
-        config['ai_analysis'].setdefault('high_risk_only', True)
-        config['ai_analysis'].setdefault('successful_attacks_only', True)
-        config['ai_analysis'].setdefault('success_status_codes', ['200', '201', '202', '204', '301', '302', '304'])
-        config['ai_analysis'].setdefault('max_ai_analysis', 5)
-        config['ai_analysis'].setdefault('high_risk_severity', 'high')
-        
-        config.setdefault('server', {})
-        config['server'].setdefault('ip', '未知')
-        
-        return config
 
     def _read_log_file_chunked(self) -> Generator[str, None, None]:
         """
@@ -479,10 +445,21 @@ class LogHunter:
     
     def _filter_and_sort_entries(self, matched_entries: List[Dict]) -> List[Dict]:
         """过滤和排序匹配条目"""
-        severity_priority = {'high': 3, 'medium': 2, 'low': 1}
+        # 注意：必须包含 'critical'，否则 critical 事件会因 .get(..., 0) 得到 0 而沉底
+        severity_priority = {'critical': 4, 'high': 3, 'medium': 2, 'low': 1}
+        # 置信度次级排序，使高置信度命中排在更前
+        confidence_priority = {'high': 2, 'medium': 1, 'low': 0}
         sorted_entries = sorted(
-            matched_entries, 
-            key=lambda x: severity_priority.get(x['match']['rule'].get('severity', 'low'), 0), 
+            matched_entries,
+            key=lambda x: (
+                severity_priority.get(x['match']['rule'].get('severity', 'low'), 0),
+                x['match'].get('threat_score').score if x['match'].get('threat_score') else 0.0,
+                confidence_priority.get(
+                    x['match'].get('confidence_level')
+                    or (x['match'].get('threat_score').confidence_level if x['match'].get('threat_score') else 'medium'),
+                    0
+                ),
+            ),
             reverse=True
         )
         

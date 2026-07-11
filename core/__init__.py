@@ -97,6 +97,17 @@ from .security_validator import (
     create_session_token,
     validate_session_token
 )
+from .logging_config import (
+    LoggingConfig,
+    SSlogsFormatter,
+    ContextualLogger,
+    get_logging_config,
+    setup_logging,
+    get_logger,
+    log_performance,
+    log_context,
+    init_default_logging
+)
 
 # 类型提示和接口定义
 if TYPE_CHECKING:
@@ -200,6 +211,17 @@ __all__ = [
     'sanitize_input',
     'create_session_token',
     'validate_session_token',
+
+    # 日志配置模块
+    'LoggingConfig',
+    'SSlogsFormatter',
+    'ContextualLogger',
+    'get_logging_config',
+    'setup_logging',
+    'get_logger',
+    'log_performance',
+    'log_context',
+    'init_default_logging',
 ]
 
 # 版本信息

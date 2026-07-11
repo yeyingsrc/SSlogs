@@ -1,5 +1,32 @@
-name: 暴力破解攻击检测
-pattern: '(/login|/wp-login\.php|/admin/login|/user/login|/auth/login)\?.*?(username|user|email)=.*&(password|pass)='
-severity: medium
+name: "暴力破解攻击检测 (聚合版)"
+# pattern 为必填字段(规则加载器要求)，此处仅作端点特征标识；
+# 真正的检测逻辑由 aggregation 驱动，单行匹配阶段会被 aggregation_only 跳过。
+pattern:
+  request_path: "(?i)/(wp-login|login|admin/login|user/login|auth/login|signin|session)"
+aggregation_only: true
+aggregation:
+  # 按 src_ip 分组统计
+  field: src_ip
+  # 限定只统计登录类端点（与上面 pattern 的端点范围保持一致）
+  path_pattern: "(?i)/(wp-login|login|admin/login|user/login|auth/login|signin|session)"
+  # 时间窗口
+  window: 60s
+  # 同一IP在窗口内达此阈值才告警
+  threshold: 10
+  # 只统计认证失败的响应（暴力破解的典型特征）
+  failed_status: [401, 403]
+severity: high
 category: brute_force
-description: 检测对常见登录页面的暴力破解尝试，包括多次提交用户名和密码参数的请求
+description: |
+  聚合版暴力破解检测：同一源IP在60秒内对登录端点产生10次及以上认证失败响应(401/403)才触发。
+  解决旧版"匹配单条带用户名密码的登录请求"导致每次正常登录都误报的问题。
+  暴力破解本质是频率/速率行为，单行正则无法表达，必须依赖跨事件计数。
+cwe: "CWE-307"
+owasp: "A07:2021 - Identification and Authentication Failures"
+attack_patterns:
+  - "密码爆破"
+  - "凭证 stuffing"
+  - "撞库攻击"
+response_codes: [401, 403]
+threat_level: "high"
+impact: "可能导致账户被非法登录、权限被接管或横向移动"

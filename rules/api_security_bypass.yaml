@@ -24,11 +24,11 @@ pattern:
   # API密钥泄露
   params: '(api_key|apikey|secret|token)=([A-Za-z0-9]{20,}|sk-[A-Za-z0-9]{20,})'
 
-  # 端点枚举
-  request_path: '/(api|v1|v2|graphql|rest|swagger|docs)/.*(admin|users|config|internal|private)'
+  # 端点枚举（仅匹配明确的内部/私有端点，不用 .*admin|users 等通配）
+  request_path: '/(api|v1|v2)/.*(internal|private|debug|_admin)'
 
-  # 方法绕过
-  request_method: '(TRACE|CONNECT|OPTIONS|PATCH)'
+  # 方法绕过（仅TRACE/CONNECT危险方法；OPTIONS是正常CORS预检，PATCH是正常RESTful方法）
+  request_method: '(TRACE|CONNECT)'
 
   # 协议降级攻击
   request_headers: '(X-Forwarded-Proto|X-Real-Proto):\s*(http|ftp)'

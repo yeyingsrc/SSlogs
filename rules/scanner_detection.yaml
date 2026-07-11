@@ -1,7 +1,8 @@
 name: "安全扫描器检测"
 pattern:
   user_agent: "(?i)(nikto|dirbuster|sqlmap|w3af|arachni|netsparker|acunetix|burp|suite|zap|goscan|masscan|nmap|openvas|nessus|rapid7|metasploit|cobalt|strike|nuclei|subfinder|httpx|ffuf|gobuster|dirb|wfuzz|hydra|medusa|john|hashcat|enum4linux|smbclient|nbtscan|snmpwalk|whatweb|wafw00f|wpscan|joomscan|droopescan|skipfish|uniscan|grabber|vega|webscarab|paros|spike|brutus|thc|saint|retina|core|impact|canvas|immunity|nexpose|qualys|rapid7|tenable)"
-  request_path: "(?i).*(admin|login|manager|console|config|setup|install|test|debug|dev|staging|backup|old|tmp|temp|bak|conf|cfg|ini|xml|json|yml|yaml|sql|db|database|phpmyadmin|adminer|webadmin|cpanel|plesk|directadmin)"
+  # 仅匹配明确的敏感管理后台/备份路径，不再用 .*(login|api|json|test) 等普通词通配
+  request_path: "(?i)/(phpmyadmin|adminer|webadmin|cpanel|plesk|directadmin|webmin|wp-admin|wp-content|manager/html|jmx-console|web-console|jenkins|jenkins/script|/.git/|/.svn/|/.env|/config.php|/backup|/database.sql|/dump.sql|/db.sql)"
 severity: "high"
 category: "reconnaissance"
 description: "检测常见安全扫描工具和目录枚举工具，包括商用和开源扫描器"
