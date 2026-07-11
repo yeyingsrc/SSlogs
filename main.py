@@ -28,6 +28,14 @@ from io import BytesIO
 import tempfile
 from collections import Counter
 
+def _safe_tar_filter(member, dest):
+    """tarfile安全过滤器：防止路径遍历和符号链接攻击"""
+    if member.name.startswith(('/', '..')):
+        return None
+    if member.issym() or member.islnk():
+        return None
+    return member
+
 class LogHunter:
     """日志分析主类 - 支持上下文管理器"""
     
@@ -132,6 +140,12 @@ class LogHunter:
         elif file.endswith('.tar.gz'):
             with tarfile.open(file, 'r:gz') as tar:
                 for member in tar.getmembers():
+                    # 安全检查：防止路径遍历和符号链接
+                    if member.name.startswith(('/', '..')):
+                        self.logger.warning(f"跳过可疑tar成员: {member.name}")
+                        continue
+                    if member.issym() or member.islnk():
+                        continue
                     if member.isfile() and member.name.lower().endswith('.log'):
                         with tar.extractfile(member) as f:
                             for line in f:

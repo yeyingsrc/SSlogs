@@ -20,8 +20,12 @@ rule_dir: rules
 rules:
   path: rules/
   default_severity: medium
+<<<<<<< HEAD
   case_sensitive: false
   max_matches: 50
+=======
+  path: rules/
+>>>>>>> dbcfc95695db2065f726934b2d7b14ab8dd244c4
   auto_reload: true
 analysis:
   batch_size: 1000
@@ -151,7 +155,7 @@ ollama:
   model: deepseek-r1:14b
   base_url: http://localhost:11434/api/chat
   timeout: 60
-geoip_db_path: /Users/wooluo/DEV/SSlogs/config/GeoLite2-Country.mmdb
+geoip_db_path: config/GeoLite2-Country.mmdb
 
 # 日志配置
 logging:
